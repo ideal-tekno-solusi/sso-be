@@ -1,0 +1,27 @@
+services:
+  host: localhost
+  port: 8080
+
+config:
+  csrf:
+    age: 600 #seconds
+    domain: "localhost:8080"
+    path: "/"
+
+database:
+  read:
+    driver: postgresql
+    host: localhost
+    port: 5433
+    database: sso
+    schema: sso
+    username: ryuze
+    password: asd123qwe
+  write:
+    driver: postgresql
+    host: localhost
+    port: 5433
+    database: sso
+    schema: sso
+    username: ryuze
+    password: asd123qwe
