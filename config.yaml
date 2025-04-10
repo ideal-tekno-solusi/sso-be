@@ -1,11 +1,15 @@
 services:
   host: localhost
-  port: 8080
+  port: 8081
 
 config:
   csrf:
     age: 600 #seconds
-    domain: "localhost:8080"
+    domain: "localhost"
+    path: "/"
+  session:
+    age: 600 #seconds
+    domain: "localhost"
     path: "/"
 
 database:

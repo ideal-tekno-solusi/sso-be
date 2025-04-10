@@ -13,3 +13,12 @@ values (
     $4,
     now()
 );
+
+-- name: GetAuthorization :one
+select
+    id,
+    user_id
+from
+    authorization_tokens
+where
+    id = $1;

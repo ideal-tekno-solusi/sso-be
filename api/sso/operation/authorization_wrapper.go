@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
@@ -40,11 +41,19 @@ func AuthorizationWrapper(handler func(e echo.Context, params *AuthorizationRequ
 		}
 
 		csrfToken, _ := e.Cookie(fmt.Sprintf("%v-XSRF-TOKEN", strings.ToUpper(params.ClientId)))
-		if csrfToken.Value == "" {
-			return errors.New("xsrf token is empty")
+		if csrfToken == nil {
+			err := errors.New("xsrf token is empty")
+			utils.SendProblemDetailJson(e, http.StatusBadRequest, err.Error(), e.Path(), uuid.NewString())
+
+			return nil
 		}
-		if params.State != csrfToken.Value {
-			return errors.New("state and xsrf token is not match")
+
+		token, _ := url.QueryUnescape(csrfToken.Value)
+		if params.State != token {
+			err := errors.New("state and xsrf token is not match")
+			utils.SendProblemDetailJson(e, http.StatusBadRequest, err.Error(), e.Path(), uuid.NewString())
+
+			return nil
 		}
 
 		return handler(e, &params)

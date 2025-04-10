@@ -7,6 +7,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createSession = `-- name: CreateSession :exec
@@ -41,4 +43,26 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 		arg.CodeChallengeMethod,
 	)
 	return err
+}
+
+const getAuthorization = `-- name: GetAuthorization :one
+select
+    id,
+    user_id
+from
+    authorization_tokens
+where
+    id = $1
+`
+
+type GetAuthorizationRow struct {
+	ID     string
+	UserID pgtype.Text
+}
+
+func (q *Queries) GetAuthorization(ctx context.Context, id string) (GetAuthorizationRow, error) {
+	row := q.db.QueryRow(ctx, getAuthorization, id)
+	var i GetAuthorizationRow
+	err := row.Scan(&i.ID, &i.UserID)
+	return i, err
 }
