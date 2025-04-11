@@ -39,7 +39,7 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 		}
 		if data == nil {
 			errorMessage := "current authorization token not found, please relog and try again"
-			logrus.Warn(errorMessage)
+			logrus.Info(errorMessage)
 
 			//? delete authorization cookie
 			utils.SetCookie(ctx, http.Cookie{

@@ -22,3 +22,14 @@ from
     authorization_tokens
 where
     id = $1;
+
+-- name: GetUser :one
+select
+    id,
+    name,
+    dot,
+    password
+from
+    users
+where
+    id = $1;

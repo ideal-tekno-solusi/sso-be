@@ -66,3 +66,34 @@ func (q *Queries) GetAuthorization(ctx context.Context, id string) (GetAuthoriza
 	err := row.Scan(&i.ID, &i.UserID)
 	return i, err
 }
+
+const getUser = `-- name: GetUser :one
+select
+    id,
+    name,
+    dot,
+    password
+from
+    users
+where
+    id = $1
+`
+
+type GetUserRow struct {
+	ID       string
+	Name     string
+	Dot      pgtype.Timestamp
+	Password string
+}
+
+func (q *Queries) GetUser(ctx context.Context, id string) (GetUserRow, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i GetUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Dot,
+		&i.Password,
+	)
+	return i, err
+}

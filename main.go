@@ -32,6 +32,16 @@ func main() {
 		MaxAge:           36000,
 	}))
 
+	r.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		CookiePath:     "/",
+		CookieDomain:   "localhost",
+		CookieSecure:   false,
+		CookieHTTPOnly: true,
+		CookieSameSite: http.SameSiteStrictMode,
+		CookieMaxAge:   3600,
+		TokenLookup:    "header:Sso-CSRF-Token",
+	}))
+
 	cfg := bootstrap.InitContainer()
 
 	api.RegisterApi(r, cfg)

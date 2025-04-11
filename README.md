@@ -3,6 +3,7 @@
 TODO:
 - [x] create endpoint authorization
 - [x] create logic to check user already login by check Authorization cookie
+- [ ] create csrf middleware
 - [ ] create endpoint login
 - [ ] create logic to decrypt encrypted pass
 - [ ] create logic to hash pass (bcrypt)

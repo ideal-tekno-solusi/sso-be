@@ -9,4 +9,5 @@ import (
 func Router(r *echo.Echo, s Service) {
 	v1 := r.Group("/v1")
 	v1.GET("/api/authorization", operation.AuthorizationWrapper(s.Authorization))
+	v1.POST("/api/login", operation.LoginWrapper(s.Login))
 }
