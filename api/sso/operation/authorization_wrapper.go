@@ -2,22 +2,21 @@ package operation
 
 import (
 	"app/utils"
-	"errors"
 	"net/http"
-	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type AuthorizationRequest struct {
-	RedirectUrl         string `query:"redirect_url"`
-	ClientId            string `query:"client_id"`
-	ResponseType        string `query:"response_type"`
+	RedirectUrl         string `query:"redirect_url" validate:"required"`
+	ClientId            string `query:"client_id" validate:"required"`
+	ResponseType        string `query:"response_type" validate:"required"`
 	Scopes              string `query:"scopes"`
-	State               string `query:"state"`
-	CodeChallenge       string `query:"code_challenge"`
-	CodeChallengeMethod string `query:"code_challenge_method"`
+	State               string `query:"state" validate:"required"`
+	CodeChallenge       string `query:"code_challenge" validate:"required"`
+	CodeChallengeMethod string `query:"code_challenge_method" validate:"required,eq=S256"`
 }
 
 func AuthorizationWrapper(handler func(e echo.Context, params *AuthorizationRequest) error) echo.HandlerFunc {
@@ -31,49 +30,13 @@ func AuthorizationWrapper(handler func(e echo.Context, params *AuthorizationRequ
 			return nil
 		}
 
-		err = validateAuthorizationRequest(params)
+		err = e.Validate(params)
 		if err != nil {
-			utils.SendProblemDetailJson(e, http.StatusBadRequest, err.Error(), e.Path(), uuid.NewString())
+			utils.SendProblemDetailJsonValidate(e, http.StatusBadRequest, "validation error", e.Path(), uuid.NewString(), err.(validator.ValidationErrors))
 
 			return nil
 		}
 
 		return handler(e, &params)
 	}
-}
-
-func validateAuthorizationRequest(params AuthorizationRequest) error {
-	if len(params.ClientId) == 0 || strings.TrimSpace(params.ClientId) == "" {
-		return errors.New("client id can't be empty")
-	}
-
-	if len(params.RedirectUrl) == 0 || strings.TrimSpace(params.RedirectUrl) == "" {
-		return errors.New("redirect url can't be empty")
-	}
-
-	if len(params.ResponseType) == 0 || strings.TrimSpace(params.ResponseType) == "" {
-		return errors.New("response type can't be empty")
-	}
-
-	if strings.ToLower(params.ResponseType) != "code" {
-		return errors.New("response type need to be set to code")
-	}
-
-	if len(params.State) == 0 || strings.TrimSpace(params.State) == "" {
-		return errors.New("state can't be empty")
-	}
-
-	if len(params.CodeChallenge) == 0 || strings.TrimSpace(params.CodeChallenge) == "" {
-		return errors.New("code challenge can't be empty")
-	}
-
-	if len(params.CodeChallengeMethod) == 0 || strings.TrimSpace(params.CodeChallengeMethod) == "" {
-		return errors.New("code challenge method can't be empty")
-	}
-
-	if params.CodeChallengeMethod != "S256" {
-		return errors.New("code challenge method only accept S256")
-	}
-
-	return nil
 }

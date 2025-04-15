@@ -36,6 +36,8 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return ctx.NoContent(http.StatusForbidden)
 	}
 
+	//TODO: lanjutin 20250411
+
 	//TODO: hash plain password from params and compare with user data from db
 	if params.Password != user.Password {
 		errorMessage := "username or password is wrong, please try again."

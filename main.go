@@ -10,6 +10,9 @@ import (
 	"os/signal"
 	"time"
 
+	vd "app/api/middleware"
+
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -21,6 +24,7 @@ func main() {
 	r := echo.New()
 
 	r.Logger.SetLevel(log.INFO)
+	r.Validator = &vd.CustomValidator{Validator: validator.New()}
 
 	// TODO: cek lagi CORS ini
 	r.Use(middleware.CORSWithConfig(middleware.CORSConfig{

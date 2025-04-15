@@ -86,5 +86,9 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 	}
 
 	//TODO: redirect to sso fe login page
+
+	//? set back csrf from sender to header
+	ctx.Response().Header().Set("X-CSRF-Token", params.State)
+
 	return ctx.NoContent(200)
 }
