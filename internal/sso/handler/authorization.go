@@ -19,6 +19,7 @@ import (
 func (r *RestService) Authorization(ctx echo.Context, params *operation.AuthorizationRequest) error {
 	//TODO: lanjutin bikin logic nya untuk simpan code challenge ke db dan cek cookie authorization apakah exist
 	//TODO: sementara session id generate dari uuid, harap gunakan teknik lain
+	//TODO: 20250502 mending ganti jadi Authentication jangan Authorization, karena Authentication untuk verify apakah sudah pernah login sebelumnya dan Authorization untuk generate access token setelah berhasil login
 	context := context.Background()
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
@@ -88,7 +89,8 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 	//TODO: redirect to sso fe login page
 
 	//? set back csrf from sender to header
-	ctx.Response().Header().Set("X-CSRF-Token", params.State)
+	token := ctx.Get("csrf").(string)
+	ctx.Response().Header().Set("Sso-CSRF-Token", token)
 
 	return ctx.NoContent(200)
 }

@@ -3,6 +3,7 @@
 TODO:
 - [x] create endpoint authorization
 - [x] create logic to check user already login by check Authorization cookie
+- [x] update logic to send custom error message when csrf error relate
 - [ ] create endpoint login
 - [ ] create logic to decrypt encrypted pass
 - [ ] create logic to hash pass (bcrypt)

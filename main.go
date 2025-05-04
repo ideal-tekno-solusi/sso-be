@@ -3,6 +3,7 @@ package main
 import (
 	"app/api"
 	"app/bootstrap"
+	"app/utils"
 	"context"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	vd "app/api/middleware"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -44,6 +46,12 @@ func main() {
 		CookieSameSite: http.SameSiteStrictMode,
 		CookieMaxAge:   3600,
 		TokenLookup:    "header:Sso-CSRF-Token",
+		ErrorHandler: func(err error, c echo.Context) error {
+			message := err.(*echo.HTTPError)
+			utils.SendProblemDetailJson(c, message.Code, message.Message.(string), c.Path(), uuid.NewString())
+
+			return nil
+		},
 	}))
 
 	cfg := bootstrap.InitContainer()

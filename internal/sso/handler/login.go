@@ -36,14 +36,18 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return ctx.NoContent(http.StatusForbidden)
 	}
 
-	//TODO: lanjutin 20250411
+	//TODO: lanjutin 20250411?? what should i do?
 
 	//TODO: hash plain password from params and compare with user data from db
 	if params.Password != user.Password {
 		errorMessage := "username or password is wrong, please try again."
 		logrus.Info(errorMessage)
 
+		//TODO: should return message too
+		return ctx.NoContent(http.StatusForbidden)
 	}
+
+	//TODO: 20250502 set cookie SSO-AUTHORIZATION
 
 	return ctx.NoContent(http.StatusOK)
 }
