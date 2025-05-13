@@ -32,22 +32,22 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		errorMessage := "username or password is wrong, please try again."
 		logrus.Info(errorMessage)
 
-		//TODO: should return message too
-		return ctx.NoContent(http.StatusForbidden)
-	}
+		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
 
-	//TODO: lanjutin 20250411?? what should i do?
+		return nil
+	}
 
 	//TODO: hash plain password from params and compare with user data from db
 	if params.Password != user.Password {
 		errorMessage := "username or password is wrong, please try again."
 		logrus.Info(errorMessage)
 
-		//TODO: should return message too
-		return ctx.NoContent(http.StatusForbidden)
+		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
 	}
 
-	//TODO: 20250502 set cookie SSO-AUTHORIZATION
+	//TODO: 20250502 set cookie Authorization-Code
 
 	return ctx.NoContent(http.StatusOK)
 }

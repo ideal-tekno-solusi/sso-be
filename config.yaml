@@ -12,6 +12,16 @@ config:
     domain: "localhost"
     path: "/"
 
+secret:
+  internal:
+    key: ES256
+    private: "-----BEGIN EC PRIVATE KEY-----MHcCAQEEIHaRGJfqNbCYH5CdpQLgszDqaI/kKP2/T17OFaI14AHooAoGCCqGSM49AwEHoUQDQgAEXO9dtngJP2xTv+A+OzN579sYggCNoSXkNScNisHxVO+jd+WLhVMJiqdz8NC6kwKzCxqq4EJKzlFz5r/5qZsusg==-----END EC PRIVATE KEY-----"
+    public: "-----BEGIN PUBLIC KEY-----MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEXO9dtngJP2xTv+A+OzN579sYggCNoSXkNScNisHxVO+jd+WLhVMJiqdz8NC6kwKzCxqq4EJKzlFz5r/5qZsusg==-----END PUBLIC KEY-----"
+  inventory:
+    callback_url: "http://localhost:8080/v1/api/callback"
+    key: ES256
+    private: "-----BEGIN EC PRIVATE KEY-----MHcCAQEEIEzx52mglW36W9Wy+J6B5Fwsx9a/HxHDVG0LiS+MqVa9oAoGCCqGSM49AwEHoUQDQgAE5+2HXR81VJEAZpYJI6WHKCbIVGeW96P685AN1CXxiPJ8CIKBEXmtuuJKESnhZBZpiFaMRnnCv9ondlbd7NDfCQ==-----END EC PRIVATE KEY-----"
+    public: "-----BEGIN PUBLIC KEY-----MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5+2HXR81VJEAZpYJI6WHKCbIVGeW96P685AN1CXxiPJ8CIKBEXmtuuJKESnhZBZpiFaMRnnCv9ondlbd7NDfCQ==-----END PUBLIC KEY-----"
 database:
   read:
     driver: postgresql

@@ -25,7 +25,7 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	authorizationService := repository.AuthorizationRepository(repo)
 
-	authorization, _ := ctx.Cookie("SSO-AUTHORIZATION")
+	authorization, _ := ctx.Cookie("Authorization-Code")
 	if authorization != nil {
 		token, _ := url.QueryUnescape(authorization.Value)
 
@@ -44,7 +44,7 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 
 			//? delete authorization cookie
 			utils.SetCookie(ctx, http.Cookie{
-				Name:     "SSO-AUTHORIZATION",
+				Name:     "Authorization-Code",
 				Path:     "/",
 				Domain:   "localhost",
 				MaxAge:   -1,

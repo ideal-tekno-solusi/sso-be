@@ -2,17 +2,16 @@ package operation
 
 import (
 	"app/utils"
-	"errors"
 	"net/http"
-	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 func LoginWrapper(handler func(e echo.Context, params *LoginRequest) error) echo.HandlerFunc {
@@ -33,25 +32,13 @@ func LoginWrapper(handler func(e echo.Context, params *LoginRequest) error) echo
 			return nil
 		}
 
-		err = validateLoginRequest(params)
+		err = e.Validate(params)
 		if err != nil {
-			utils.SendProblemDetailJson(e, http.StatusBadRequest, err.Error(), e.Path(), uuid.NewString())
+			utils.SendProblemDetailJsonValidate(e, http.StatusBadRequest, "validation error", e.Path(), uuid.NewString(), err.(validator.ValidationErrors))
 
 			return nil
 		}
 
 		return handler(e, &params)
 	}
-}
-
-func validateLoginRequest(params LoginRequest) error {
-	if len(params.Username) == 0 || strings.TrimSpace(params.Username) == "" {
-		return errors.New("username can't be empty")
-	}
-
-	if len(params.Password) == 0 || strings.TrimSpace(params.Password) == "" {
-		return errors.New("password can't be empty")
-	}
-
-	return nil
 }
