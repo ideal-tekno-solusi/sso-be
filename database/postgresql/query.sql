@@ -33,3 +33,13 @@ from
     users
 where
     id = $1;
+
+-- name: GetSession :one
+select
+    client_id,
+    code_challenge,
+    code_challenge_method
+from
+    sessions
+where
+    id = $1;

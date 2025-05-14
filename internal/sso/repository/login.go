@@ -9,6 +9,7 @@ import (
 
 type Login interface {
 	GetUser(ctx context.Context, id string) (*database.GetUserRow, error)
+	GetSession(ctx context.Context, id string) (*database.GetSessionRow, error)
 }
 
 type LoginService struct {
@@ -23,6 +24,19 @@ func LoginRepository(login Login) *LoginService {
 
 func (r *Repository) GetUser(ctx context.Context, id string) (*database.GetUserRow, error) {
 	data, err := r.read.GetUser(ctx, id)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &data, nil
+}
+
+func (r *Repository) GetSession(ctx context.Context, id string) (*database.GetSessionRow, error) {
+	data, err := r.read.GetSession(ctx, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, nil

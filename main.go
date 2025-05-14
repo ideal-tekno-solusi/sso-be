@@ -45,7 +45,7 @@ func main() {
 		CookieHTTPOnly: true,
 		CookieSameSite: http.SameSiteStrictMode,
 		CookieMaxAge:   3600,
-		TokenLookup:    "header:Sso-CSRF-Token",
+		TokenLookup:    "cookie:_csrf",
 		ErrorHandler: func(err error, c echo.Context) error {
 			message := err.(*echo.HTTPError)
 			utils.SendProblemDetailJson(c, message.Code, message.Message.(string), c.Path(), uuid.NewString())

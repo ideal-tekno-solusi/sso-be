@@ -67,6 +67,30 @@ func (q *Queries) GetAuthorization(ctx context.Context, id string) (GetAuthoriza
 	return i, err
 }
 
+const getSession = `-- name: GetSession :one
+select
+    client_id,
+    code_challenge,
+    code_challenge_method
+from
+    sessions
+where
+    id = $1
+`
+
+type GetSessionRow struct {
+	ClientID            string
+	CodeChallenge       string
+	CodeChallengeMethod string
+}
+
+func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, error) {
+	row := q.db.QueryRow(ctx, getSession, id)
+	var i GetSessionRow
+	err := row.Scan(&i.ClientID, &i.CodeChallenge, &i.CodeChallengeMethod)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 select
     id,
