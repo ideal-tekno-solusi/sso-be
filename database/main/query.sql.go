@@ -11,12 +11,38 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createAuthToken = `-- name: CreateAuthToken :exec
+insert into authorization_tokens
+(
+    id,
+    session_id,
+    insert_date
+)
+values
+(
+    $1,
+    $2,
+    now()
+)
+`
+
+type CreateAuthTokenParams struct {
+	ID        string
+	SessionID pgtype.Text
+}
+
+func (q *Queries) CreateAuthToken(ctx context.Context, arg CreateAuthTokenParams) error {
+	_, err := q.db.Exec(ctx, createAuthToken, arg.ID, arg.SessionID)
+	return err
+}
+
 const createSession = `-- name: CreateSession :exec
 insert into sessions (
     id,
     client_id,
     code_challenge,
     code_challenge_method,
+    scopes,
     insert_date
 )
 values (
@@ -24,6 +50,7 @@ values (
     $2,
     $3,
     $4,
+    $5,
     now()
 )
 `
@@ -33,6 +60,7 @@ type CreateSessionParams struct {
 	ClientID            string
 	CodeChallenge       string
 	CodeChallengeMethod string
+	Scopes              pgtype.Text
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
@@ -41,30 +69,29 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 		arg.ClientID,
 		arg.CodeChallenge,
 		arg.CodeChallengeMethod,
+		arg.Scopes,
 	)
 	return err
 }
 
-const getAuthorization = `-- name: GetAuthorization :one
-select
-    id,
-    user_id
-from
-    authorization_tokens
-where
-    id = $1
+const deleteAuthToken = `-- name: DeleteAuthToken :exec
+delete from authorization_tokens
+where session_id = $1
 `
 
-type GetAuthorizationRow struct {
-	ID     string
-	UserID pgtype.Text
+func (q *Queries) DeleteAuthToken(ctx context.Context, sessionID pgtype.Text) error {
+	_, err := q.db.Exec(ctx, deleteAuthToken, sessionID)
+	return err
 }
 
-func (q *Queries) GetAuthorization(ctx context.Context, id string) (GetAuthorizationRow, error) {
-	row := q.db.QueryRow(ctx, getAuthorization, id)
-	var i GetAuthorizationRow
-	err := row.Scan(&i.ID, &i.UserID)
-	return i, err
+const deleteSession = `-- name: DeleteSession :exec
+delete from sessions
+where id = $1
+`
+
+func (q *Queries) DeleteSession(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, deleteSession, id)
+	return err
 }
 
 const getSession = `-- name: GetSession :one
@@ -88,6 +115,51 @@ func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, err
 	row := q.db.QueryRow(ctx, getSession, id)
 	var i GetSessionRow
 	err := row.Scan(&i.ClientID, &i.CodeChallenge, &i.CodeChallengeMethod)
+	return i, err
+}
+
+const getToken = `-- name: GetToken :one
+select
+    auth.id,
+    auth.session_id,
+    sess.code_challenge,
+    sess.scopes,
+    us.id as username,
+    us.name
+from
+    authorization_tokens auth
+join
+    sessions sess
+on
+    auth.session_id = sess.id
+join
+    users us
+on
+    sess.user_id = us.id
+where
+    auth.session_id = $1
+`
+
+type GetTokenRow struct {
+	ID            string
+	SessionID     pgtype.Text
+	CodeChallenge string
+	Scopes        pgtype.Text
+	Username      string
+	Name          string
+}
+
+func (q *Queries) GetToken(ctx context.Context, sessionID pgtype.Text) (GetTokenRow, error) {
+	row := q.db.QueryRow(ctx, getToken, sessionID)
+	var i GetTokenRow
+	err := row.Scan(
+		&i.ID,
+		&i.SessionID,
+		&i.CodeChallenge,
+		&i.Scopes,
+		&i.Username,
+		&i.Name,
+	)
 	return i, err
 }
 
@@ -120,4 +192,22 @@ func (q *Queries) GetUser(ctx context.Context, id string) (GetUserRow, error) {
 		&i.Password,
 	)
 	return i, err
+}
+
+const updateUserIdSession = `-- name: UpdateUserIdSession :exec
+update sessions
+set
+    user_id = $1
+where
+    id = $2
+`
+
+type UpdateUserIdSessionParams struct {
+	UserID pgtype.Text
+	ID     string
+}
+
+func (q *Queries) UpdateUserIdSession(ctx context.Context, arg UpdateUserIdSessionParams) error {
+	_, err := q.db.Exec(ctx, updateUserIdSession, arg.UserID, arg.ID)
+	return err
 }

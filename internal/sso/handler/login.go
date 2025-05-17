@@ -79,6 +79,16 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
+	err = loginService.UpdateUserIdSession(context, params.Username, sessionId.String())
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to update session in database with error: %v", err)
+		logrus.Error(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
 	authorizationCode, err := utils.GenerateRandomString(64)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to generate auth code with error: %v", err)

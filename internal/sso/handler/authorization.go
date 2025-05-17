@@ -7,8 +7,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -21,41 +19,6 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	authorizationService := repository.AuthorizationRepository(repo)
-
-	authorization, _ := ctx.Cookie("Authorization-Code")
-	if authorization != nil {
-		token, _ := url.QueryUnescape(authorization.Value)
-
-		data, err := authorizationService.GetAuthorization(context, token)
-		if err != nil {
-			errorMessage := fmt.Sprintf("failed to get authorization token with error: %v", err)
-			logrus.Warn(errorMessage)
-
-			utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-			return nil
-		}
-		if data == nil {
-			errorMessage := "current authorization token not found, please relog and try again"
-			logrus.Info(errorMessage)
-
-			//? delete authorization cookie
-			utils.SetCookie(ctx, http.Cookie{
-				Name:     "Authorization-Code",
-				Path:     "/",
-				Domain:   "localhost",
-				MaxAge:   -1,
-				Expires:  time.Unix(0, 0),
-				HttpOnly: true,
-			})
-
-			utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
-
-			return nil
-		}
-
-		return ctx.Redirect(http.StatusPermanentRedirect, params.RedirectUrl)
-	}
 
 	age := viper.GetInt("config.session.age")
 	domain := viper.GetString("config.session.domain")
@@ -73,7 +36,7 @@ func (r *RestService) Authorization(ctx echo.Context, params *operation.Authoriz
 		HttpOnly: true,
 	})
 
-	err := authorizationService.CreateSession(context, sessionId, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod)
+	err := authorizationService.CreateSession(context, sessionId, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to create new session with error: %v", err)
 		logrus.Warn(errorMessage)

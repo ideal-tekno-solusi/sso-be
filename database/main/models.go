@@ -10,15 +10,17 @@ import (
 
 type AuthorizationToken struct {
 	ID         string
-	UserID     pgtype.Text
+	SessionID  pgtype.Text
 	InsertDate pgtype.Timestamp
 }
 
 type Session struct {
 	ID                  string
+	UserID              pgtype.Text
 	ClientID            string
 	CodeChallenge       string
 	CodeChallengeMethod string
+	Scopes              pgtype.Text
 	InsertDate          pgtype.Timestamp
 }
 

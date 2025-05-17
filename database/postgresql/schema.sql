@@ -8,14 +8,16 @@ create table if not exists users (
 
 create table if not exists sessions (
 	id varchar(250) primary key,
+	user_id varchar(255),
 	client_id varchar(25) not null,
 	code_challenge text not null,
 	code_challenge_method varchar(10) not null,
+	scopes varchar(255),
 	insert_date timestamp not null
 );
 
 create table if not exists authorization_tokens (
 	id text primary key,
-	user_id varchar(50) references users(id),
+	session_id varchar(250) references sessions(id),
 	insert_date timestamp not null
 );

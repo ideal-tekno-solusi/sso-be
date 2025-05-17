@@ -11,8 +11,13 @@ config:
     age: 600 #seconds
     domain: "localhost"
     path: "/"
+  url:
+    redirect_fe:
+      login: ""
 
 secret:
+  expToken: 300 #minute
+  refreshToken: 3600 #minute
   internal:
     callback_url: "http://localhost:8081/v1/api/callback"
     key: ES256

@@ -4,12 +4,11 @@ import (
 	database "app/database/main"
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Authorization interface {
-	CreateSession(ctx context.Context, id, clientId, codeChallenge, codeChallengeMethod string) error
-	GetAuthorization(ctx context.Context, id string) (*database.GetAuthorizationRow, error)
+	CreateSession(ctx context.Context, id, clientId, codeChallenge, codeChallengeMethod, scopes string) error
 }
 
 type AuthorizationService struct {
@@ -22,12 +21,16 @@ func AuthorizationRepository(authorization Authorization) *AuthorizationService 
 	}
 }
 
-func (r *Repository) CreateSession(ctx context.Context, id, clientId, codeChallenge, codeChallengeMethod string) error {
+func (r *Repository) CreateSession(ctx context.Context, id, clientId, codeChallenge, codeChallengeMethod, scopes string) error {
 	args := database.CreateSessionParams{
 		ID:                  id,
 		ClientID:            clientId,
 		CodeChallenge:       codeChallenge,
 		CodeChallengeMethod: codeChallengeMethod,
+		Scopes: pgtype.Text{
+			String: scopes,
+			Valid:  true,
+		},
 	}
 
 	err := r.write.CreateSession(ctx, args)
@@ -36,17 +39,4 @@ func (r *Repository) CreateSession(ctx context.Context, id, clientId, codeChalle
 	}
 
 	return nil
-}
-
-func (r *Repository) GetAuthorization(ctx context.Context, id string) (*database.GetAuthorizationRow, error) {
-	data, err := r.read.GetAuthorization(ctx, id)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-
-		return nil, err
-	}
-
-	return &data, nil
 }

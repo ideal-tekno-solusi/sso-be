@@ -10,15 +10,17 @@ create table if not exists sso.users (
 
 create table if not exists sso.sessions (
 	id varchar(250) primary key,
+	user_id varchar(255),
 	client_id varchar(25) not null,
 	code_challenge text not null,
 	code_challenge_method varchar(10) not null,
+	scopes varchar(255),
 	insert_date timestamp not null
 );
 
 create table if not exists sso.authorization_tokens (
 	id text primary key,
-	user_id varchar(50) references sso.users(id),
+	session_id varchar(250) references sso.sessions(id),
 	insert_date timestamp not null
 );
 
@@ -33,6 +35,6 @@ values (
 	'alfian',
 	'alfian',
 	'1997-06-10',
-	'budika123',
+	'$2a$15$xwGZGcKIURe1kwSt7zTrrOwCCwOfmN9K5SqOu32sJdGj67FJEUfou',
 	now()
 );
