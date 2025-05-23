@@ -138,6 +138,8 @@ on
     sess.user_id = us.id
 where
     auth.session_id = $1
+order by
+    auth.insert_date desc
 `
 
 type GetTokenRow struct {

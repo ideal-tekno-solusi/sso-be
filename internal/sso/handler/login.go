@@ -41,8 +41,19 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
+	//? hash password inputed
+	inputPassHash, err := utils.HashBcrypt(params.Password)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to hash password with error: %v", err)
+		logrus.Error(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
 	//? compare hash password
-	if utils.ValidateHash(user.Password, params.Password) {
+	if utils.ValidateHash(user.Password, *inputPassHash) {
 		errorMessage := "username or password is wrong, please try again."
 		logrus.Info(errorMessage)
 
@@ -79,7 +90,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	err = loginService.UpdateUserIdSession(context, params.Username, sessionId.String())
+	err = loginService.UpdateUserIdSession(context, params.Username, sessionId.Value)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to update session in database with error: %v", err)
 		logrus.Error(errorMessage)
@@ -93,6 +104,16 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to generate auth code with error: %v", err)
 		logrus.Warn(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	err = loginService.CreateAuthToken(context, *authorizationCode, sessionId.Value)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to insert auth token with error: %v", err)
+		logrus.Error(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 

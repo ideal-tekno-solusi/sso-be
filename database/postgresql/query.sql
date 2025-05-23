@@ -70,7 +70,9 @@ join
 on
     sess.user_id = us.id
 where
-    auth.session_id = $1;
+    auth.session_id = $1
+order by
+    auth.insert_date desc;
 
 -- name: DeleteSession :exec
 delete from sessions

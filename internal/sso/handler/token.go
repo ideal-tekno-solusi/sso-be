@@ -35,7 +35,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	token, err := tokenService.GetToken(context, sessionId.String())
+	token, err := tokenService.GetToken(context, sessionId.Value)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get token with error: %v", err)
 		logrus.Error(errorMessage)
@@ -108,7 +108,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? delete auth token and session and remove session id
-	err = tokenService.DeleteAuthToken(context, sessionId.String())
+	err = tokenService.DeleteAuthToken(context, sessionId.Value)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to delete auth token with error: %v", err)
 		logrus.Error(errorMessage)
@@ -118,7 +118,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	err = tokenService.DeleteSession(context, sessionId.String())
+	err = tokenService.DeleteSession(context, sessionId.Value)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to delete session with error: %v", err)
 		logrus.Error(errorMessage)

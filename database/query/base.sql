@@ -10,7 +10,7 @@ create table if not exists sso.users (
 
 create table if not exists sso.sessions (
 	id varchar(250) primary key,
-	user_id varchar(255),
+	user_id varchar(50),
 	client_id varchar(25) not null,
 	code_challenge text not null,
 	code_challenge_method varchar(10) not null,
