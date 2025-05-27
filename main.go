@@ -28,6 +28,10 @@ func main() {
 	r.Logger.SetLevel(log.INFO)
 	r.Validator = &vd.CustomValidator{Validator: validator.New()}
 
+	csrfDomain := viper.GetString("config.csrf.domain")
+	csrfPath := viper.GetString("config.csrf.path")
+	csrfAge := viper.GetInt("config.csrf.age")
+
 	// TODO: cek lagi CORS ini
 	r.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"http://127.0.0.1:8080"},
@@ -39,12 +43,12 @@ func main() {
 	}))
 
 	r.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		CookiePath:     "/",
-		CookieDomain:   "localhost",
+		CookiePath:     csrfPath,
+		CookieDomain:   csrfDomain,
 		CookieSecure:   false,
 		CookieHTTPOnly: true,
 		CookieSameSite: http.SameSiteStrictMode,
-		CookieMaxAge:   3600,
+		CookieMaxAge:   csrfAge,
 		TokenLookup:    "cookie:_csrf",
 		ErrorHandler: func(err error, c echo.Context) error {
 			message := err.(*echo.HTTPError)
