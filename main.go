@@ -28,6 +28,8 @@ func main() {
 	r.Logger.SetLevel(log.INFO)
 	r.Validator = &vd.CustomValidator{Validator: validator.New()}
 
+	cfg := bootstrap.InitContainer()
+
 	csrfDomain := viper.GetString("config.csrf.domain")
 	csrfPath := viper.GetString("config.csrf.path")
 	csrfAge := viper.GetInt("config.csrf.age")
@@ -56,8 +58,6 @@ func main() {
 			return nil
 		},
 	}))
-
-	cfg := bootstrap.InitContainer()
 
 	api.RegisterApi(r, cfg)
 
