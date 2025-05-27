@@ -5,11 +5,11 @@ services:
 config:
   csrf:
     age: 600 #seconds
-    domain: "localhost"
+    domain: "http://192.168.0.252"
     path: "/"
   session:
     age: 600 #seconds
-    domain: "localhost"
+    domain: "http://192.168.0.252"
     path: "/"
   url:
     redirect_fe:
