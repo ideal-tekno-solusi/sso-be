@@ -1,6 +1,6 @@
 services:
   host: localhost
-  port: 8050
+  port: 8080
 
 config:
   csrf:
@@ -19,12 +19,12 @@ secret:
   expToken: 300 #minute
   refreshToken: 3600 #minute
   internal:
-    callback_url: "http://localhost:8051/v1/api/callback"
+    callback_url: "http://192.168.0.252:8051/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIC1wfYU7WzOZ4AnNph9xA0Z42XvdNJNCQ02GPNSVhc7eoAoGCCqGSM49\nAwEHoUQDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5q47xQgmZZUn5ZEd/Me8CPuVv\n+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5\nq47xQgmZZUn5ZEd/Me8CPuVv+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END PUBLIC KEY-----"
   inventory:
-    callback_url: "http://localhost:8080/v1/api/callback"
+    callback_url: "http://192.168.0.252:8051/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIHhNCyKahW3YrJcf+zcPm6MwJgKmXh3L7F6c9XV952W2oAoGCCqGSM49\nAwEHoUQDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2DxG2YYcNOdAtK6DFdsHH90sp\nhx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2\nDxG2YYcNOdAtK6DFdsHH90sphx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END PUBLIC KEY-----"

@@ -4,4 +4,3 @@ COPY . .
 RUN go mod tidy
 RUN go build
 ENTRYPOINT ["/app/app"]
-EXPOSE 8050
