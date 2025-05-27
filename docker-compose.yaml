@@ -22,8 +22,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    networks:
+      sso_backend:
+        ipv4_address: 192.168.0.100
     ports:
       - 8050:8080
 
 # volumes:
 #   postgres_sso:
+networks:
+  sso_backend:
+    ipam:
+      driver: default
+      config:
+        - subnet: "192.168.0.0/24"
