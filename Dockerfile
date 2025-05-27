@@ -3,5 +3,5 @@ WORKDIR /app
 COPY . .
 RUN go mod tidy
 RUN go build
-ENTRYPOINT ["app"]
-EXPOSE 8080
+ENTRYPOINT ["/app/app"]
+EXPOSE 8050

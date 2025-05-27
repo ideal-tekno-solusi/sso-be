@@ -1,6 +1,6 @@
 services:
   host: localhost
-  port: 8081
+  port: 8050
 
 config:
   csrf:
@@ -19,7 +19,7 @@ secret:
   expToken: 300 #minute
   refreshToken: 3600 #minute
   internal:
-    callback_url: "http://localhost:8081/v1/api/callback"
+    callback_url: "http://localhost:8051/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIC1wfYU7WzOZ4AnNph9xA0Z42XvdNJNCQ02GPNSVhc7eoAoGCCqGSM49\nAwEHoUQDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5q47xQgmZZUn5ZEd/Me8CPuVv\n+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5\nq47xQgmZZUn5ZEd/Me8CPuVv+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END PUBLIC KEY-----"
@@ -31,17 +31,17 @@ secret:
 database:
   read:
     driver: postgresql
-    host: localhost
-    port: 5433
+    host: 192.168.0.251
+    port: 5432
     database: sso
     schema: sso
-    username: ryuze
+    username: sso
     password: asd123qwe
   write:
     driver: postgresql
-    host: localhost
-    port: 5433
+    host: 192.168.0.251
+    port: 5432
     database: sso
     schema: sso
-    username: ryuze
+    username: sso
     password: asd123qwe
