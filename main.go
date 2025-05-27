@@ -47,7 +47,6 @@ func main() {
 		CookieDomain:   csrfDomain,
 		CookieSecure:   false,
 		CookieHTTPOnly: true,
-		CookieSameSite: http.SameSiteStrictMode,
 		CookieMaxAge:   csrfAge,
 		TokenLookup:    "cookie:_csrf",
 		ErrorHandler: func(err error, c echo.Context) error {
