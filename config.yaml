@@ -5,11 +5,11 @@ services:
 config:
   csrf:
     age: 600 #seconds
-    domain: "https://idtecsi.my.id"
+    domain: ".idtecsi.my.id"
     path: "/"
   session:
     age: 600 #seconds
-    domain: "http://idtecsi.my.id"
+    domain: ".idtecsi.my.id"
     path: "/"
   url:
     redirect_fe:
