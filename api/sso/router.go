@@ -8,7 +8,7 @@ import (
 
 func Router(r *echo.Echo, s Service) {
 	auth := r.Group("/auth")
-	auth.GET("/api/authorization", operation.AuthorizationWrapper(s.Authorization))
+	auth.GET("/api/authorize", operation.AuthorizeWrapper(s.Authorize))
 	auth.POST("/api/login", operation.LoginWrapper(s.Login))
 	auth.POST("/api/token", operation.TokenWrapper(s.Token))
 }

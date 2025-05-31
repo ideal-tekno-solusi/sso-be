@@ -3,15 +3,15 @@ services:
   port: 8080
 
 config:
-  csrf:
-    age: 600 #seconds
-    domain: "localhost"
-    path: "/"
-  session:
-    age: 600 #seconds
-    domain: "localhost"
-    path: "/"
   url:
+    internal:
+      domain: "http://localhost:8080"
+      path:
+        authorize: "/auth/api/authorize"
+    inventory:
+      domain: "http://localhost:8081"
+      path:
+        callback: "/v1/api/callback"
     redirect_fe:
       login: ""
 

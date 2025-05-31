@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -25,17 +24,13 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	tokenService := repository.TokenRepository(repo)
 
-	sessionId, err := ctx.Cookie("Session-Id")
-	if err != nil {
-		errorMessage := "session id not found, please login again later"
-		logrus.Warn(errorMessage)
+	//? generate code challenge from code verifier req
+	hash := sha256.New()
+	hash.Write([]byte(params.CodeVerifier))
+	codeChallenge := base64.StdEncoding.EncodeToString(hash.Sum(nil))
 
-		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	token, err := tokenService.GetToken(context, sessionId.Value)
+	//? get token by code challenge and check validity of code verifier at once
+	token, err := tokenService.GetToken(context, codeChallenge)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get token with error: %v", err)
 		logrus.Error(errorMessage)
@@ -45,25 +40,10 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	//? generate code challenge from code verifier req
-	hash := sha256.New()
-	hash.Write([]byte(params.CodeVerifier))
-	codeChallenge := base64.StdEncoding.EncodeToString(hash.Sum(nil))
-
-	//? check is generated code challenge same asa saved code challenge
-	if codeChallenge != token.CodeChallenge {
-		errorMessage := "code challenge is not same, please login again later"
-		logrus.Error(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
 	//? check if auth code is match
 	if params.Code != token.ID {
 		errorMessage := "token not match, please login again later"
-		logrus.Error(errorMessage)
+		logrus.Warn(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -99,6 +79,16 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
+	err = tokenService.CreateRefreshToken(context, *refreshToken, token.Username)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to insert refresh token with error: %v", err)
+		logrus.Error(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
 	authToken := entity.Token{
 		AccessToken:  *accessToken,
 		RefreshToken: *refreshToken,
@@ -108,7 +98,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? delete auth token and session and remove session id
-	err = tokenService.DeleteAuthToken(context, sessionId.Value)
+	err = tokenService.DeleteAuthToken(context, token.SessionID.String)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to delete auth token with error: %v", err)
 		logrus.Error(errorMessage)
@@ -118,7 +108,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	err = tokenService.DeleteSession(context, sessionId.Value)
+	err = tokenService.DeleteSession(context, token.SessionID.String)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to delete session with error: %v", err)
 		logrus.Error(errorMessage)
@@ -127,15 +117,6 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 		return nil
 	}
-
-	utils.SetCookie(ctx, http.Cookie{
-		Name:     "Session-Id",
-		Value:    "",
-		Path:     "/",
-		Expires:  time.Unix(0, 0),
-		Secure:   false,
-		HttpOnly: true,
-	})
 
 	return ctx.JSON(http.StatusOK, authToken)
 }

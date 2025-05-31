@@ -17,9 +17,6 @@ func HashBcrypt(message string) (*string, error) {
 
 func ValidateHash(hash, message string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(message))
-	if err != nil {
-		return false
-	}
 
-	return true
+	return err == nil
 }

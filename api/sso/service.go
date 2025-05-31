@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	Authorization(ctx echo.Context, params *operation.AuthorizationRequest) error
+	Authorize(ctx echo.Context, params *operation.AuthorizeRequest) error
 	Login(ctx echo.Context, params *operation.LoginRequest) error
 	Token(ctx echo.Context, params *operation.TokenRequest) error
 }

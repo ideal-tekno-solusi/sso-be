@@ -15,7 +15,7 @@ import (
 func GenerateAuthToken(message, username string, expTime int) (*string, error) {
 	privString := viper.GetString("secret.internal.private")
 	if privString == "" {
-		return nil, fmt.Errorf("private key note found")
+		return nil, fmt.Errorf("private key not found")
 	}
 
 	block, _ := pem.Decode([]byte(privString))
@@ -45,4 +45,27 @@ func GenerateAuthToken(message, username string, expTime int) (*string, error) {
 	result := string(sign)
 
 	return &result, nil
+}
+
+func ValidateJwt(message string) (bool, error) {
+	pubString := viper.GetString("secret.internal.public")
+	if pubString == "" {
+		return false, fmt.Errorf("public key not found")
+	}
+
+	block, _ := pem.Decode([]byte(pubString))
+
+	ecKey, _ := x509.ParsePKIXPublicKey(block.Bytes)
+
+	key, err := jwk.PublicRawKeyOf(ecKey)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = jwt.Parse([]byte(message), jwt.WithKey(jwa.ES256(), key), jwt.WithValidate(true))
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

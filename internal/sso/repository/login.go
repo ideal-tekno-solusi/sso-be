@@ -10,9 +10,7 @@ import (
 
 type Login interface {
 	GetUser(ctx context.Context, id string) (*database.GetUserRow, error)
-	GetSession(ctx context.Context, id string) (*database.GetSessionRow, error)
-	CreateAuthToken(ctx context.Context, authToken, sessionId string) error
-	UpdateUserIdSession(ctx context.Context, userId, id string) error
+	CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes string) error
 }
 
 type LoginService struct {
@@ -38,46 +36,23 @@ func (r *Repository) GetUser(ctx context.Context, id string) (*database.GetUserR
 	return &data, nil
 }
 
-func (r *Repository) GetSession(ctx context.Context, id string) (*database.GetSessionRow, error) {
-	data, err := r.read.GetSession(ctx, id)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-
-		return nil, err
-	}
-
-	return &data, nil
-}
-
-func (r *Repository) CreateAuthToken(ctx context.Context, authToken, sessionId string) error {
-	args := database.CreateAuthTokenParams{
-		ID: authToken,
-		SessionID: pgtype.Text{
-			String: sessionId,
-			Valid:  true,
-		},
-	}
-
-	err := r.write.CreateAuthToken(ctx, args)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *Repository) UpdateUserIdSession(ctx context.Context, userId, id string) error {
-	args := database.UpdateUserIdSessionParams{
+func (r *Repository) CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes string) error {
+	args := database.CreateSessionParams{
+		ID: id,
 		UserID: pgtype.Text{
 			String: userId,
 			Valid:  true,
 		},
-		ID: id,
+		ClientID:            clientId,
+		CodeChallenge:       codeChallenge,
+		CodeChallengeMethod: codeChallengeMethod,
+		Scopes: pgtype.Text{
+			String: scopes,
+			Valid:  true,
+		},
 	}
 
-	err := r.write.UpdateUserIdSession(ctx, args)
+	err := r.write.CreateSession(ctx, args)
 	if err != nil {
 		return err
 	}

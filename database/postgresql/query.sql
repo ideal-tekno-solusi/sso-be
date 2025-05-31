@@ -1,6 +1,7 @@
 -- name: CreateSession :exec
 insert into sessions (
     id,
+    user_id,
     client_id,
     code_challenge,
     code_challenge_method,
@@ -13,6 +14,7 @@ values (
     $3,
     $4,
     $5,
+    $6,
     now()
 );
 
@@ -70,7 +72,7 @@ join
 on
     sess.user_id = us.id
 where
-    auth.session_id = $1
+    sess.code_challenge = $1
 order by
     auth.insert_date desc;
 
@@ -82,9 +84,30 @@ where id = $1;
 delete from authorization_tokens
 where session_id = $1;
 
--- name: UpdateUserIdSession :exec
-update sessions
-set
-    user_id = $1
+-- name: CreateRefreshToken :exec
+insert into refresh_tokens
+(
+    id,
+    user_id,
+    insert_date
+)
+values
+(
+    $1,
+    $2,
+    now()
+);
+
+-- name: GetRefreshToken :one
+select
+    id,
+    user_id,
+    insert_date
+from
+    refresh_tokens
 where
-    id = $2;
+    id = $1;
+
+-- name: DeleteRefreshToken :exec
+delete from refresh_tokens
+where id = $1;

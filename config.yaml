@@ -3,15 +3,15 @@ services:
   port: 8080
 
 config:
-  csrf:
-    age: 600 #seconds
-    domain: ".idtecsi.my.id"
-    path: "/"
-  session:
-    age: 600 #seconds
-    domain: ".idtecsi.my.id"
-    path: "/"
   url:
+    internal:
+      domain: "https://sso.idtecsi.my.id"
+      path:
+        authorize: "/auth/api/authorize"
+    inventory:
+      domain: "https://inventory.idtecsi.my.id"
+      path:
+        callback: "/v1/api/callback"
     redirect_fe:
       login: ""
 

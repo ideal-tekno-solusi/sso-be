@@ -64,6 +64,8 @@ func normalizeError(err validator.FieldError) string {
 		return fmt.Sprintf("%v max length is %v", strings.Split(err.Namespace(), ".")[1], err.Param())
 	case "eq":
 		return fmt.Sprintf("%v only accept %v", strings.Split(err.Namespace(), ".")[1], err.Param())
+	case "oneofci":
+		return fmt.Sprintf("%v contain unidentified string", strings.Split(err.Namespace(), ".")[1])
 	default:
 		return "undefined error"
 	}

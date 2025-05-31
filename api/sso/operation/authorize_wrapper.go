@@ -9,19 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type AuthorizationRequest struct {
+type AuthorizeRequest struct {
 	RedirectUrl         string `query:"redirect_url" validate:"required"`
 	ClientId            string `query:"client_id" validate:"required"`
-	ResponseType        string `query:"response_type" validate:"required"`
+	ResponseType        string `query:"response_type" validate:"required,oneofci=code refresh"`
 	Scopes              string `query:"scopes"`
 	State               string `query:"state" validate:"required"`
 	CodeChallenge       string `query:"code_challenge" validate:"required"`
 	CodeChallengeMethod string `query:"code_challenge_method" validate:"required,eq=S256"`
 }
 
-func AuthorizationWrapper(handler func(e echo.Context, params *AuthorizationRequest) error) echo.HandlerFunc {
+func AuthorizeWrapper(handler func(e echo.Context, params *AuthorizeRequest) error) echo.HandlerFunc {
 	return func(e echo.Context) error {
-		params := AuthorizationRequest{}
+		params := AuthorizeRequest{}
 
 		err := (&echo.DefaultBinder{}).BindQueryParams(e, &params)
 		if err != nil {

@@ -22,11 +22,12 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	loginService := repository.LoginRepository(repo)
+	result := entity.Token{}
 
 	user, err := loginService.GetUser(context, params.Username)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get user with error: %v", err)
-		logrus.Warn(errorMessage)
+		logrus.Error(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -34,7 +35,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	}
 	if user == nil {
 		errorMessage := "username or password is wrong, please try again."
-		logrus.Info(errorMessage)
+		logrus.Warn(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -55,16 +56,6 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	//? compare hash password
 	if utils.ValidateHash(user.Password, *inputPassHash) {
 		errorMessage := "username or password is wrong, please try again."
-		logrus.Info(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	sessionId, err := ctx.Cookie("Session-Id")
-	if err != nil {
-		errorMessage := "session id not found, please login again later"
 		logrus.Warn(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
@@ -72,27 +63,9 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	session, err := loginService.GetSession(context, sessionId.Value)
+	err = loginService.CreateSession(context, params.State, params.Username, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes)
 	if err != nil {
-		errorMessage := fmt.Sprintf("failed to get session from db with error: %v", err)
-		logrus.Warn(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-	if session == nil {
-		errorMessage := "session not found in db, please try again later"
-		logrus.Info(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	err = loginService.UpdateUserIdSession(context, params.Username, sessionId.Value)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to update session in database with error: %v", err)
+		errorMessage := fmt.Sprintf("failed to create session with error: %v", err)
 		logrus.Error(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
@@ -100,19 +73,40 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	authorizationCode, err := utils.GenerateRandomString(64)
+	//? req GET to authorize
+	authorizeDomain := viper.GetString("config.url.internal.domain")
+	authorizePath := viper.GetString("config.url.internal.path.authorize")
+
+	query := url.Values{}
+	query.Add("response_type", params.ResponseType)
+	query.Add("client_id", params.ClientId)
+	query.Add("redirect_url", params.RedirectUrl)
+	query.Add("scopes", params.Scopes)
+	query.Add("state", params.State)
+	query.Add("code_challenge", params.CodeChallenge)
+	query.Add("code_challenge_method", params.CodeChallengeMethod)
+
+	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, nil)
 	if err != nil {
-		errorMessage := fmt.Sprintf("failed to generate auth code with error: %v", err)
-		logrus.Warn(errorMessage)
+		errorMessage := fmt.Sprintf("failed to request authorize with error: %v", err)
+		logrus.Error(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
+	if status != http.StatusOK {
+		errorMessage := fmt.Sprintf("response from server is not ok, status %v", status)
+		logrus.Warn(errorMessage)
 
-	err = loginService.CreateAuthToken(context, *authorizationCode, sessionId.Value)
+		utils.SendProblemDetailJson(ctx, status, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	err = json.Unmarshal(res, &result)
 	if err != nil {
-		errorMessage := fmt.Sprintf("failed to insert auth token with error: %v", err)
+		errorMessage := fmt.Sprintf("failed to unmarshal message with error: %v", err)
 		logrus.Error(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
@@ -120,27 +114,5 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	message := entity.LoginEncrypt{
-		CodeChallenge:       session.CodeChallenge,
-		CodeChallengeMethod: session.CodeChallengeMethod,
-		AuthorizationCode:   *authorizationCode,
-	}
-
-	messageString, _ := json.Marshal(message)
-
-	ciphertext, err := utils.EncryptJwe(string(messageString), session.ClientID)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to encrypt message with error: %v", err)
-		logrus.Warn(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	callbackUrl := viper.GetString(fmt.Sprintf("secret.%v.callback_url", session.ClientID))
-	redParams := url.Values{}
-	redParams.Add("code", *ciphertext)
-
-	return ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
+	return ctx.JSON(http.StatusOK, result)
 }

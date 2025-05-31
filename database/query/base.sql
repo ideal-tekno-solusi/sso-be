@@ -24,6 +24,12 @@ create table if not exists sso.authorization_tokens (
 	insert_date timestamp not null
 );
 
+create table if not exists sso.refresh_tokens (
+	id text primary key,
+	user_id varchar(50),
+	insert_date timestamp not null
+)
+
 insert into sso.users (
 	id,
 	name,

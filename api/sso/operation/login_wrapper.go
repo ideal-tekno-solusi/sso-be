@@ -10,8 +10,15 @@ import (
 )
 
 type LoginRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Username            string `json:"username" validate:"required"`
+	Password            string `json:"password" validate:"required"`
+	RedirectUrl         string `json:"redirectUrl" validate:"required"`
+	ClientId            string `json:"clientId" validate:"required"`
+	ResponseType        string `json:"responseType" validate:"required,oneofci=code refresh"`
+	Scopes              string `json:"scopes"`
+	State               string `json:"state" validate:"required"`
+	CodeChallenge       string `json:"codeChallenge" validate:"required"`
+	CodeChallengeMethod string `json:"codeChallengeMethod" validate:"required,eq=S256"`
 }
 
 func LoginWrapper(handler func(e echo.Context, params *LoginRequest) error) echo.HandlerFunc {
@@ -19,13 +26,6 @@ func LoginWrapper(handler func(e echo.Context, params *LoginRequest) error) echo
 		params := LoginRequest{}
 
 		err := e.Bind(&params)
-		if err != nil {
-			utils.SendProblemDetailJson(e, http.StatusInternalServerError, err.Error(), e.Path(), uuid.NewString())
-
-			return nil
-		}
-
-		err = (&echo.DefaultBinder{}).BindHeaders(e, &params)
 		if err != nil {
 			utils.SendProblemDetailJson(e, http.StatusInternalServerError, err.Error(), e.Path(), uuid.NewString())
 

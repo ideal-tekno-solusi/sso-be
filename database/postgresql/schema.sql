@@ -21,3 +21,9 @@ create table if not exists authorization_tokens (
 	session_id varchar(250) references sessions(id),
 	insert_date timestamp not null
 );
+
+create table if not exists refresh_tokens (
+	id text primary key,
+	user_id varchar(50),
+	insert_date timestamp not null
+);
