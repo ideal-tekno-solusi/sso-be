@@ -93,7 +93,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	verifierHttponly := viper.GetBool("config.verifier.httponly")
 
 	cookies := []*http.Cookie{
-		{Name: codeVerifier.Name, Value: codeVerifier.Value, Path: verifierPath, Domain: verifierDomain, MaxAge: verifierAge, Secure: verifierSecure, HttpOnly: verifierHttponly},
+		{Name: codeVerifier.Name, Value: codeVerifier.Value, Path: verifierPath, Domain: verifierDomain, MaxAge: verifierAge, Secure: verifierSecure, HttpOnly: verifierHttponly, SameSite: http.SameSiteNoneMode},
 	}
 
 	query := url.Values{}
