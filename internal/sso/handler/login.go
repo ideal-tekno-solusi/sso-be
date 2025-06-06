@@ -22,7 +22,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	loginService := repository.LoginRepository(repo)
-	result := entity.Token{}
+	result := entity.AuthorizeResponse{}
 
 	user, err := loginService.GetUser(context, params.Username)
 	if err != nil {
@@ -76,25 +76,6 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	//? req GET to authorize
 	authorizeDomain := viper.GetString("config.url.internal.domain")
 	authorizePath := viper.GetString("config.url.internal.path.authorize")
-	codeVerifier, err := ctx.Cookie("verifier")
-	if err != nil {
-		errorMessage := "failed to get code verifier, please try login again"
-		logrus.Warn(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	verifierAge := viper.GetInt("config.verifier.age")
-	verifierDomain := viper.GetString("config.verifier.domain")
-	verifierPath := viper.GetString("config.verifier.path")
-	verifierSecure := viper.GetBool("config.verifier.secure")
-	verifierHttponly := viper.GetBool("config.verifier.httponly")
-
-	cookies := []*http.Cookie{
-		{Name: codeVerifier.Name, Value: codeVerifier.Value, Path: verifierPath, Domain: verifierDomain, MaxAge: verifierAge, Secure: verifierSecure, HttpOnly: verifierHttponly, SameSite: http.SameSiteNoneMode},
-	}
 
 	query := url.Values{}
 	query.Add("response_type", params.ResponseType)
@@ -105,7 +86,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	query.Add("code_challenge", params.CodeChallenge)
 	query.Add("code_challenge_method", params.CodeChallengeMethod)
 
-	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, cookies)
+	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, nil)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to request authorize with error: %v", err)
 		logrus.Error(errorMessage)
@@ -133,5 +114,9 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, result)
+	callbackUrl := viper.GetString(fmt.Sprintf("secret.%v.callback_url", params.ClientId))
+	redParams := url.Values{}
+	redParams.Add("code", result.Ciphertext)
+
+	return ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
 }

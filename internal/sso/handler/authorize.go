@@ -9,12 +9,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeRequest) error {
@@ -141,9 +139,9 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	callbackUrl := viper.GetString(fmt.Sprintf("secret.%v.callback_url", params.ClientId))
-	redParams := url.Values{}
-	redParams.Add("code", *ciphertext)
+	res := entity.AuthorizeResponse{
+		Ciphertext: *ciphertext,
+	}
 
-	return ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
+	return ctx.JSON(http.StatusOK, res)
 }
