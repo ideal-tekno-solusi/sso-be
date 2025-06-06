@@ -23,16 +23,6 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	authorizeService := repository.AuthorizeRepository(repo)
 
-	//!test code
-	codeVerifier, err := ctx.Cookie("verifier")
-	if err != nil {
-		errorMessage := "failed to get code verifier, please try login again"
-		logrus.Warn(errorMessage)
-	}
-	if codeVerifier.Value != "" {
-		logrus.Infof("code verifier: %v", codeVerifier)
-	}
-
 	//? used for validation, continue if exist and valid
 	if params.ResponseType == "refresh" {
 		tokenValid, err := utils.ValidateJwt(params.State)
@@ -155,5 +145,5 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	redParams := url.Values{}
 	redParams.Add("code", *ciphertext)
 
-	return ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
+	return ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
 }
