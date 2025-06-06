@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 func Router(r *echo.Echo, s Service) {
@@ -15,6 +16,7 @@ func Router(r *echo.Echo, s Service) {
 
 	test := r.Group("/test")
 	test.GET("/redirect", func(c echo.Context) error {
+		logrus.Info("masuk pak eko")
 		c.Redirect(http.StatusPermanentRedirect, "https://inventory.idtecsi.my.id/test/redirect")
 		return nil
 	})
