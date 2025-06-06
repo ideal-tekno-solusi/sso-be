@@ -86,8 +86,14 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
+	verifierAge := viper.GetInt("config.verifier.age")
+	verifierDomain := viper.GetString("config.verifier.domain")
+	verifierPath := viper.GetString("config.verifier.path")
+	verifierSecure := viper.GetBool("config.verifier.secure")
+	verifierHttponly := viper.GetBool("config.verifier.httponly")
+
 	cookies := []*http.Cookie{
-		codeVerifier,
+		{Name: codeVerifier.Name, Value: codeVerifier.Value, Path: verifierPath, Domain: verifierDomain, MaxAge: verifierAge, Secure: verifierSecure, HttpOnly: verifierHttponly},
 	}
 
 	query := url.Values{}

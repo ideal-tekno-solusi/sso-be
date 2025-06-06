@@ -14,6 +14,12 @@ config:
         callback: "/v1/api/callback"
     redirect_fe:
       login: ""
+  verifier:
+    age: 300 #seconds
+    domain: "localhost"
+    path: "/"
+    secure: false
+    httponly: true
 
 secret:
   expToken: 300 #minute
