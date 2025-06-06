@@ -18,7 +18,7 @@ config:
     age: 300 #seconds
     domain: ".idtecsi.my.id"
     path: "/"
-    secure: false
+    secure: true
     httponly: true
 
 secret:
