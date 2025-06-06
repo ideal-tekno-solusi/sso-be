@@ -6,6 +6,7 @@ insert into sessions (
     code_challenge,
     code_challenge_method,
     scopes,
+    redirect_url,
     insert_date
 )
 values (
@@ -15,6 +16,7 @@ values (
     $4,
     $5,
     $6,
+    $7,
     now()
 );
 
@@ -59,6 +61,7 @@ select
     auth.session_id,
     sess.code_challenge,
     sess.scopes,
+    sess.redirect_url,
     us.id as username,
     us.name
 from

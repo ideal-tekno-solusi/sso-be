@@ -13,7 +13,7 @@ type Authorize interface {
 	CreateAuthToken(ctx context.Context, authToken, sessionId string) error
 	GetRefreshToken(ctx context.Context, refreshToken string) (*database.RefreshToken, error)
 	DeleteRefreshToken(ctx context.Context, refreshToken string) error
-	CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes string) error
+	CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes, redirectUrl string) error
 }
 
 type AuthorizeService struct {

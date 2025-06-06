@@ -61,7 +61,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 			return nil
 		}
 
-		err = authorizeService.CreateSession(context, params.State, refreshToken.UserID.String, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes)
+		err = authorizeService.CreateSession(context, params.State, refreshToken.UserID.String, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes, params.RedirectUrl)
 		if err != nil {
 			errorMessage := fmt.Sprintf("failed to create new session with error: %v", err)
 			logrus.Error(errorMessage)

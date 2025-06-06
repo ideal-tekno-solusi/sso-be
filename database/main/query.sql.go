@@ -69,6 +69,7 @@ insert into sessions (
     code_challenge,
     code_challenge_method,
     scopes,
+    redirect_url,
     insert_date
 )
 values (
@@ -78,6 +79,7 @@ values (
     $4,
     $5,
     $6,
+    $7,
     now()
 )
 `
@@ -89,6 +91,7 @@ type CreateSessionParams struct {
 	CodeChallenge       string
 	CodeChallengeMethod string
 	Scopes              pgtype.Text
+	RedirectUrl         pgtype.Text
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
@@ -99,6 +102,7 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) er
 		arg.CodeChallenge,
 		arg.CodeChallengeMethod,
 		arg.Scopes,
+		arg.RedirectUrl,
 	)
 	return err
 }
@@ -181,6 +185,7 @@ select
     auth.session_id,
     sess.code_challenge,
     sess.scopes,
+    sess.redirect_url,
     us.id as username,
     us.name
 from
@@ -204,6 +209,7 @@ type GetTokenRow struct {
 	SessionID     pgtype.Text
 	CodeChallenge string
 	Scopes        pgtype.Text
+	RedirectUrl   pgtype.Text
 	Username      string
 	Name          string
 }
@@ -216,6 +222,7 @@ func (q *Queries) GetToken(ctx context.Context, codeChallenge string) (GetTokenR
 		&i.SessionID,
 		&i.CodeChallenge,
 		&i.Scopes,
+		&i.RedirectUrl,
 		&i.Username,
 		&i.Name,
 	)

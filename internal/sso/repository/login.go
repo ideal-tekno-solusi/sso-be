@@ -10,7 +10,7 @@ import (
 
 type Login interface {
 	GetUser(ctx context.Context, id string) (*database.GetUserRow, error)
-	CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes string) error
+	CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes, redirectUrl string) error
 }
 
 type LoginService struct {
@@ -36,7 +36,7 @@ func (r *Repository) GetUser(ctx context.Context, id string) (*database.GetUserR
 	return &data, nil
 }
 
-func (r *Repository) CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes string) error {
+func (r *Repository) CreateSession(ctx context.Context, id, userId, clientId, codeChallenge, codeChallengeMethod, scopes, redirectUrl string) error {
 	args := database.CreateSessionParams{
 		ID: id,
 		UserID: pgtype.Text{
@@ -48,6 +48,10 @@ func (r *Repository) CreateSession(ctx context.Context, id, userId, clientId, co
 		CodeChallengeMethod: codeChallengeMethod,
 		Scopes: pgtype.Text{
 			String: scopes,
+			Valid:  true,
+		},
+		RedirectUrl: pgtype.Text{
+			String: redirectUrl,
 			Valid:  true,
 		},
 	}

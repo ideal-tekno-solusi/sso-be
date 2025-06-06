@@ -63,7 +63,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	err = loginService.CreateSession(context, params.State, params.Username, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes)
+	err = loginService.CreateSession(context, params.State, params.Username, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes, params.RedirectUrl)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to create session with error: %v", err)
 		logrus.Error(errorMessage)
@@ -76,6 +76,19 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	//? req GET to authorize
 	authorizeDomain := viper.GetString("config.url.internal.domain")
 	authorizePath := viper.GetString("config.url.internal.path.authorize")
+	codeVerifier, err := ctx.Cookie("verifier")
+	if err != nil {
+		errorMessage := "failed to get code verifier, please try login again"
+		logrus.Warn(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	cookies := []*http.Cookie{
+		codeVerifier,
+	}
 
 	query := url.Values{}
 	query.Add("response_type", params.ResponseType)
@@ -86,7 +99,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	query.Add("code_challenge", params.CodeChallenge)
 	query.Add("code_challenge_method", params.CodeChallengeMethod)
 
-	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, nil)
+	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, cookies)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to request authorize with error: %v", err)
 		logrus.Error(errorMessage)

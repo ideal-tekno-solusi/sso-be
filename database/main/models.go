@@ -27,6 +27,7 @@ type Session struct {
 	CodeChallenge       string
 	CodeChallengeMethod string
 	Scopes              pgtype.Text
+	RedirectUrl         pgtype.Text
 	InsertDate          pgtype.Timestamp
 }
 

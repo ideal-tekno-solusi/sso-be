@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GenerateAuthToken(message, username string, expTime int) (*string, error) {
+func GenerateAuthToken(payloads map[string]string, expTime int) (*string, error) {
 	privString := viper.GetString("secret.internal.private")
 	if privString == "" {
 		return nil, fmt.Errorf("private key not found")
@@ -35,7 +35,9 @@ func GenerateAuthToken(message, username string, expTime int) (*string, error) {
 		return nil, err
 	}
 
-	token.Set("username", username)
+	for k, v := range payloads {
+		token.Set(k, v)
+	}
 
 	sign, err := jwt.Sign(token, jwt.WithKey(jwa.ES256(), key))
 	if err != nil {

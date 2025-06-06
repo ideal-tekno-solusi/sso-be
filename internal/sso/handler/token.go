@@ -8,7 +8,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -51,15 +50,16 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? generate jwt token
-	jwtBody := entity.Jwt{
-		Name: token.Name,
+	jwtBody := map[string]string{
+		"username":     token.Username,
+		"name":         token.Name,
+		"redirect_url": token.RedirectUrl.String,
 	}
 
-	jwtBodyString, _ := json.Marshal(jwtBody)
 	tokenExpTime := viper.GetInt("secret.expToken")
 	refreshExpTime := viper.GetInt("secret.refreshToken")
 
-	accessToken, err := utils.GenerateAuthToken(string(jwtBodyString), token.Username, tokenExpTime)
+	accessToken, err := utils.GenerateAuthToken(jwtBody, tokenExpTime)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to generate access token with error: %v", err)
 		logrus.Error(errorMessage)
@@ -69,7 +69,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	refreshToken, err := utils.GenerateAuthToken(string(jwtBodyString), token.Username, refreshExpTime)
+	refreshToken, err := utils.GenerateAuthToken(jwtBody, refreshExpTime)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to generate access token with error: %v", err)
 		logrus.Error(errorMessage)

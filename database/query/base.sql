@@ -15,6 +15,7 @@ create table if not exists sso.sessions (
 	code_challenge text not null,
 	code_challenge_method varchar(10) not null,
 	scopes varchar(255),
+	redirect_url text,
 	insert_date timestamp not null
 );
 
