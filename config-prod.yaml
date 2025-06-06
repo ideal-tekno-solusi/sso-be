@@ -16,7 +16,7 @@ config:
       login: ""
 
 secret:
-  expToken: 10080 #minute, temp set to a week, set to 300 when refresh token ready
+  expToken: 300 #minute, temp set to a week, set to 300 when refresh token ready
   refreshToken: 3600 #minute
   internal:
     callback_url: "https://sso.idtecsi.my.id/v1/api/callback"

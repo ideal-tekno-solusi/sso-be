@@ -5,32 +5,32 @@ services:
 config:
   url:
     internal:
-      domain: "http://localhost:8080"
+      domain: "https://sso.idtecsi.my.id"
       path:
         authorize: "/auth/api/authorize"
     inventory:
-      domain: "http://localhost:8081"
+      domain: "https://inventory.idtecsi.my.id"
       path:
         callback: "/v1/api/callback"
     redirect_fe:
       login: ""
 
 secret:
-  expToken: 300 #minute
+  expToken: 300 #minute, temp set to a week, set to 300 when refresh token ready
   refreshToken: 3600 #minute
   internal:
-    callback_url: "http://localhost:8081/v1/api/callback"
+    callback_url: "https://sso.idtecsi.my.id/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIC1wfYU7WzOZ4AnNph9xA0Z42XvdNJNCQ02GPNSVhc7eoAoGCCqGSM49\nAwEHoUQDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5q47xQgmZZUn5ZEd/Me8CPuVv\n+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5\nq47xQgmZZUn5ZEd/Me8CPuVv+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END PUBLIC KEY-----"
   inventory:
-    callback_url: "http://localhost:8081/v1/api/callback"
+    callback_url: "https://inventory.idtecsi.my.id/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIHhNCyKahW3YrJcf+zcPm6MwJgKmXh3L7F6c9XV952W2oAoGCCqGSM49\nAwEHoUQDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2DxG2YYcNOdAtK6DFdsHH90sp\nhx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2\nDxG2YYcNOdAtK6DFdsHH90sphx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END PUBLIC KEY-----"
 database:
   read:
-    driver: postgresql`
+    driver: postgresql
     host: 192.168.0.251
     port: 5432
     database: sso
