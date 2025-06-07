@@ -1,5 +1,5 @@
 package entity
 
 type AuthorizeResponse struct {
-	Ciphertext string `json:"ciphertext"`
+	AuthorizeCode string `json:"authorizeCode"`
 }

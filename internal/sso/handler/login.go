@@ -22,7 +22,8 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	loginService := repository.LoginRepository(repo)
-	result := entity.AuthorizeResponse{}
+	authorizeRes := entity.AuthorizeResponse{}
+	response := entity.LoginResponse{}
 
 	user, err := loginService.GetUser(context, params.Username)
 	if err != nil {
@@ -104,7 +105,17 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	err = json.Unmarshal(res, &result)
+	data, err := utils.BindResponse(res)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to bind response with error: %v", err)
+		logrus.Error(errorMessage)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	err = json.Unmarshal(*data, &authorizeRes)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to unmarshal message with error: %v", err)
 		logrus.Error(errorMessage)
@@ -116,7 +127,10 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	callbackUrl := viper.GetString(fmt.Sprintf("secret.%v.callback_url", params.ClientId))
 	redParams := url.Values{}
-	redParams.Add("code", result.Ciphertext)
+	redParams.Add("code", authorizeRes.AuthorizeCode)
+	redParams.Add("state", params.State)
 
-	return ctx.Redirect(http.StatusMovedPermanently, fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode()))
+	response.CallbackUrl = fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode())
+
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(true, response))
 }
