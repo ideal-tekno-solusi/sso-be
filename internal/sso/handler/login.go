@@ -78,13 +78,13 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	authorizePath := viper.GetString("config.url.internal.path.authorize")
 
 	query := url.Values{}
-	query.Add("response_type", params.ResponseType)
-	query.Add("client_id", params.ClientId)
-	query.Add("redirect_url", params.RedirectUrl)
+	query.Add("responseType", params.ResponseType)
+	query.Add("clientId", params.ClientId)
+	query.Add("redirectUrl", params.RedirectUrl)
 	query.Add("scopes", params.Scopes)
 	query.Add("state", params.State)
-	query.Add("code_challenge", params.CodeChallenge)
-	query.Add("code_challenge_method", params.CodeChallengeMethod)
+	query.Add("codeChallenge", params.CodeChallenge)
+	query.Add("codeChallengeMethod", params.CodeChallengeMethod)
 
 	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, nil)
 	if err != nil {

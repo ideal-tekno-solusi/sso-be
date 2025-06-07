@@ -10,13 +10,13 @@ import (
 )
 
 type AuthorizeRequest struct {
-	RedirectUrl         string `query:"redirect_url" validate:"required"`
-	ClientId            string `query:"client_id" validate:"required"`
-	ResponseType        string `query:"response_type" validate:"required,oneofci=code refresh"`
+	RedirectUrl         string `query:"redirectUrl" validate:"required"`
+	ClientId            string `query:"clientId" validate:"required"`
+	ResponseType        string `query:"responseType" validate:"required,oneofci=code refresh"`
 	Scopes              string `query:"scopes"`
 	State               string `query:"state" validate:"required"`
-	CodeChallenge       string `query:"code_challenge" validate:"required"`
-	CodeChallengeMethod string `query:"code_challenge_method" validate:"required,eq=S256"`
+	CodeChallenge       string `query:"codeChallenge" validate:"required"`
+	CodeChallengeMethod string `query:"codeChallengeMethod" validate:"required,eq=S256"`
 }
 
 func AuthorizeWrapper(handler func(e echo.Context, params *AuthorizeRequest) error) echo.HandlerFunc {
