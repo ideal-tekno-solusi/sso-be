@@ -14,7 +14,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -29,14 +28,14 @@ func main() {
 	cfg := bootstrap.InitContainer()
 
 	// TODO: cek lagi CORS ini
-	r.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://127.0.0.1:8080"},
-		AllowMethods:     []string{"GET", "POST", "PUT"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
-		AllowCredentials: true,
-		MaxAge:           36000,
-	}))
+	// r.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins:     []string{"http://127.0.0.1:8080"},
+	// 	AllowMethods:     []string{"GET", "POST", "PUT"},
+	// 	AllowHeaders:     []string{"Origin"},
+	// 	ExposeHeaders:    []string{"Content-Length", "Content-Type"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           36000,
+	// }))
 
 	api.RegisterApi(r, cfg)
 
