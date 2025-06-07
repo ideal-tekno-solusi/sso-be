@@ -10,4 +10,5 @@ type Service interface {
 	Authorize(ctx echo.Context, params *operation.AuthorizeRequest) error
 	Login(ctx echo.Context, params *operation.LoginRequest) error
 	Token(ctx echo.Context, params *operation.TokenRequest) error
+	User(ctx echo.Context, params *operation.UserRequest) error
 }
