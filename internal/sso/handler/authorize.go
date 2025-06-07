@@ -6,7 +6,6 @@ import (
 	"app/internal/sso/repository"
 	"app/utils"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -121,27 +120,9 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	message := entity.LoginEncrypt{
-		CodeChallenge:       params.CodeChallenge,
-		CodeChallengeMethod: params.CodeChallengeMethod,
-		AuthorizationCode:   *authorizeCode,
-	}
-
-	messageString, _ := json.Marshal(message)
-
-	ciphertext, err := utils.EncryptJwe(string(messageString), params.ClientId)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to encrypt message with error: %v", err)
-		logrus.Error(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
 	res := entity.AuthorizeResponse{
-		Ciphertext: *ciphertext,
+		AuthorizeCode: *authorizeCode,
 	}
 
-	return ctx.JSON(http.StatusOK, res)
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(true, res))
 }

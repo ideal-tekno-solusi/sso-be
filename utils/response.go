@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,4 +21,20 @@ func GenerateResponseJson(isSuccess bool, data any) DefaultResponse {
 		IsSuccess: isSuccess,
 		Data:      data,
 	}
+}
+
+func BindResponse(data []byte) (*[]byte, error) {
+	res := DefaultResponse{}
+
+	err := json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err = json.Marshal(res.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
 }
