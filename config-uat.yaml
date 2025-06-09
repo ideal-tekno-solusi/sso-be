@@ -23,7 +23,7 @@ config:
 
 secret:
   expToken: 300 #minute
-  refreshToken: 3600 #minute
+  refreshToken: 2880 #minute
   internal:
     callback_url: "http://localhost:8081/v1/api/callback"
     key: ES256
@@ -36,7 +36,7 @@ secret:
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2\nDxG2YYcNOdAtK6DFdsHH90sphx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END PUBLIC KEY-----"
 database:
   read:
-    driver: postgresql`
+    driver: postgresql
     host: 192.168.0.251
     port: 5432
     database: sso

@@ -7,7 +7,7 @@ create table if not exists users (
 );
 
 create table if not exists sessions (
-	id varchar(250) primary key,
+	id text primary key,
 	user_id varchar(50),
 	client_id varchar(25) not null,
 	code_challenge text not null,
@@ -19,7 +19,7 @@ create table if not exists sessions (
 
 create table if not exists authorization_tokens (
 	id text primary key,
-	session_id varchar(250) references sessions(id),
+	session_id text references sessions(id),
 	insert_date timestamp not null
 );
 

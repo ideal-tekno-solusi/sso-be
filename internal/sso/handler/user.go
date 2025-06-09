@@ -25,5 +25,5 @@ func (r *RestService) User(ctx echo.Context, params *operation.UserRequest) erro
 		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(true, plainText))
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, plainText))
 }
