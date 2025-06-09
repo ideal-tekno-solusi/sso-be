@@ -97,7 +97,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 	if status != http.StatusOK {
-		errorMessage := fmt.Sprintf("response from server is not ok, status %v", status)
+		errorMessage := fmt.Sprintf("response from server is not ok, response server: %v", string(res))
 		logrus.Warn(errorMessage)
 
 		utils.SendProblemDetailJson(ctx, status, errorMessage, ctx.Path(), uuid.NewString())
