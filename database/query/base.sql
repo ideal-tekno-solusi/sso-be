@@ -9,7 +9,7 @@ create table if not exists sso.users (
 );
 
 create table if not exists sso.sessions (
-	id varchar(250) primary key,
+	id text primary key,
 	user_id varchar(50),
 	client_id varchar(25) not null,
 	code_challenge text not null,
@@ -21,7 +21,7 @@ create table if not exists sso.sessions (
 
 create table if not exists sso.authorization_tokens (
 	id text primary key,
-	session_id varchar(250) references sso.sessions(id),
+	session_id text references sso.sessions(id),
 	insert_date timestamp not null
 );
 

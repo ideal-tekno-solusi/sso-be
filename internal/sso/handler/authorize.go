@@ -124,5 +124,5 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		AuthorizeCode: *authorizeCode,
 	}
 
-	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(true, res))
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, res))
 }

@@ -51,9 +51,9 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 	//? generate jwt token
 	jwtBody := map[string]string{
-		"username":     token.Username,
-		"name":         token.Name,
-		"redirect_url": token.RedirectUrl.String,
+		"username":    token.Username,
+		"name":        token.Name,
+		"redirectUrl": token.RedirectUrl.String,
 	}
 
 	tokenExpTime := viper.GetInt("secret.expToken")
@@ -118,5 +118,5 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, authToken)
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, authToken))
 }

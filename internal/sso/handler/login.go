@@ -105,7 +105,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	data, err := utils.BindResponse(res)
+	reqDefaultRes, reqBodyRes, err := utils.BindResponse(res)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to bind response with error: %v", err)
 		logrus.Error(errorMessage)
@@ -115,7 +115,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	err = json.Unmarshal(*data, &authorizeRes)
+	err = json.Unmarshal(*reqBodyRes, &authorizeRes)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to unmarshal message with error: %v", err)
 		logrus.Error(errorMessage)
@@ -132,5 +132,5 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	response.CallbackUrl = fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode())
 
-	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(true, response))
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(reqDefaultRes, true, response))
 }
