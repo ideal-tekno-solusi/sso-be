@@ -9,9 +9,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// type TokenRequest struct {
+// 	Code         string `json:"code" validate:"required"`
+// 	CodeVerifier string `json:"codeVerifier" validate:"required"`
+// }
+
 type TokenRequest struct {
-	Code         string `json:"code" validate:"required"`
-	CodeVerifier string `json:"codeVerifier" validate:"required"`
+	GrantType    string `json:"grant_type" validate:"required"`
+	Code         string `json:"code"`
+	RefreshToken string `json:"refresh_code"`
+	RedirectUri  string `json:"redirect_uri"`
+	CodeVerifier string `json:"code_verifier"`
+	ClientId     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
 }
 
 func TokenWrapper(handler func(e echo.Context, params *TokenRequest) error) echo.HandlerFunc {

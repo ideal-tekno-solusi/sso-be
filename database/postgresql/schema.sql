@@ -1,3 +1,21 @@
+create table if not exists clients (
+	id varchar(255) primary key,
+	name varchar(255) not null,
+	type int not null,
+	secret varchar(255),
+	token_livetime bigint
+);
+
+create table if not exists client_redirects (
+	client_id varchar(255) references clients(id) on delete cascade,
+	uri text not null
+);
+
+create table if not exists client_types (
+	id int primary key,
+	name varchar(10)
+);
+
 create table if not exists users (
 	id varchar(50) primary key,
 	name varchar(255) not null,
@@ -7,24 +25,13 @@ create table if not exists users (
 );
 
 create table if not exists sessions (
-	id text primary key,
-	user_id varchar(50),
-	client_id varchar(25) not null,
-	code_challenge text not null,
-	code_challenge_method varchar(10) not null,
-	scopes varchar(255),
-	redirect_url text,
+	id varchar(255),
+	user_id varchar(50) references users(id) on delete cascade,
 	insert_date timestamp not null
 );
 
-create table if not exists authorization_tokens (
-	id text primary key,
-	session_id text references sessions(id),
-	insert_date timestamp not null
-);
-
-create table if not exists refresh_tokens (
-	id text primary key,
-	user_id varchar(50),
+create table if not exists auths (
+	code varchar(255),
+	type varchar(7),
 	insert_date timestamp not null
 );

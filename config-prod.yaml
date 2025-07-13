@@ -20,6 +20,9 @@ config:
     path: "/"
     secure: true
     httponly: true
+  cors:
+    allow_origins:
+      - "*"
 
 secret:
   expToken: 300 #minute, temp set to a week, set to 300 when refresh token ready

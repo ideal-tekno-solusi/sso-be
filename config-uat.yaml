@@ -20,6 +20,9 @@ config:
     path: "/"
     secure: false
     httponly: true
+  cors:
+    allow_origins:
+      - "*"
 
 secret:
   expToken: 300 #minute
@@ -37,17 +40,17 @@ secret:
 database:
   read:
     driver: postgresql
-    host: 192.168.0.251
+    host: 192.168.0.250
     port: 5432
-    database: sso
+    database: postgres
     schema: sso
-    username: sso
+    username: postgres
     password: asd123qwe
   write:
     driver: postgresql
-    host: 192.168.0.251
+    host: 192.168.0.250
     port: 5432
-    database: sso
+    database: postgres
     schema: sso
-    username: sso
+    username: postgres
     password: asd123qwe

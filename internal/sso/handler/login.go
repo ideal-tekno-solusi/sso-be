@@ -2,7 +2,6 @@ package handler
 
 import (
 	"app/api/sso/operation"
-	"app/internal/sso/entity"
 	"app/internal/sso/repository"
 	"app/utils"
 	"context"
@@ -12,23 +11,54 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) error {
 	context := context.Background()
+	serviceName := "POST Login"
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	loginService := repository.LoginRepository(repo)
-	authorizeRes := entity.AuthorizeResponse{}
-	response := entity.LoginResponse{}
+	guid := uuid.NewString()
+	req := operation.AuthorizeRequest{}
+
+	//? get session, will create new if not found
+	sess, err := session.Get("session", ctx)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to get session with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+	if sess.IsNew {
+		errorMessage := "wrong request order, please login by click login button in registered website first"
+		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	//? send error if already login
+	alreadyLogin := sess.Values["guid"]
+	if alreadyLogin != nil {
+		errorMessage := "failed to process login because user already login"
+		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusBadRequest, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
 
 	user, err := loginService.GetUser(context, params.Username)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get user with error: %v", err)
-		logrus.Error(errorMessage)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -36,7 +66,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	}
 	if user == nil {
 		errorMessage := "username or password is wrong, please try again."
-		logrus.Warn(errorMessage)
+		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -47,7 +77,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	inputPassHash, err := utils.HashBcrypt(params.Password)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to hash password with error: %v", err)
-		logrus.Error(errorMessage)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -57,80 +87,91 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	//? compare hash password
 	if utils.ValidateHash(user.Password, *inputPassHash) {
 		errorMessage := "username or password is wrong, please try again."
-		logrus.Warn(errorMessage)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusForbidden, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
 
-	err = loginService.CreateSession(context, params.State, params.Username, params.ClientId, params.CodeChallenge, params.CodeChallengeMethod, params.Scopes, params.RedirectUrl)
+	//? get request query from session
+	reqByte := sess.Values["authorization"]
+	if reqByte == nil {
+		errorMessage := "authorization property not found in current session, please try to request authorization again later"
+		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	err = json.Unmarshal(reqByte.([]byte), &req)
 	if err != nil {
-		errorMessage := fmt.Sprintf("failed to create session with error: %v", err)
-		logrus.Error(errorMessage)
+		errorMessage := fmt.Sprintf("failed to unmarshal request with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
 
-	//? req GET to authorize
-	authorizeDomain := viper.GetString("config.url.internal.domain")
-	authorizePath := viper.GetString("config.url.internal.path.authorize")
+	//? save guid that be used for session to db
+	err = loginService.CreateSession(context, guid, user.ID)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to add session to db with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	//? set session to cookies
+	dataSessions := map[string]interface{}{
+		"guid": guid,
+	}
+
+	err = utils.SetAndSaveSession(dataSessions, sess, ctx.Request(), ctx.Response())
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to set session with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	//? set up redirect to /authorize
+	authDomain := viper.GetString("config.url.internal.domain")
+	authPath := viper.GetString("config.url.internal.path.authorize")
 
 	query := url.Values{}
-	query.Add("responseType", params.ResponseType)
-	query.Add("clientId", params.ClientId)
-	query.Add("redirectUrl", params.RedirectUrl)
-	query.Add("scopes", params.Scopes)
-	query.Add("state", params.State)
-	query.Add("codeChallenge", params.CodeChallenge)
-	query.Add("codeChallengeMethod", params.CodeChallengeMethod)
+	query.Add("response_type", req.ResponseType)
+	query.Add("client_id", req.ClientId)
+	query.Add("redirect_url", req.RedirectUrl)
+	query.Add("scopes", req.Scopes)
+	query.Add("state", req.State)
+	query.Add("code_challenge", req.CodeChallenge)
+	query.Add("code_challenge_method", req.CodeChallengeMethod)
 
-	status, res, err := utils.SendHttpGetRequest(fmt.Sprintf("%v%v", authorizeDomain, authorizePath), &query, nil)
+	u, err := url.Parse(fmt.Sprintf("%v%v", authDomain, authPath))
 	if err != nil {
-		errorMessage := fmt.Sprintf("failed to request authorize with error: %v", err)
-		logrus.Error(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-	if status != http.StatusOK {
-		errorMessage := fmt.Sprintf("response from server is not ok, response server: %v", string(res))
-		logrus.Warn(errorMessage)
-
-		utils.SendProblemDetailJson(ctx, status, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
-	}
-
-	reqDefaultRes, reqBodyRes, err := utils.BindResponse(res)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to bind response with error: %v", err)
-		logrus.Error(errorMessage)
+		errorMessage := fmt.Sprintf("failed to parse url with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
 
-	err = json.Unmarshal(*reqBodyRes, &authorizeRes)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to unmarshal message with error: %v", err)
-		logrus.Error(errorMessage)
+	u.RawQuery = query.Encode()
 
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
+	//? delete authorization from session
+	deleteSession := []string{
+		"authorization",
 	}
 
-	callbackUrl := viper.GetString(fmt.Sprintf("secret.%v.callback_url", params.ClientId))
-	redParams := url.Values{}
-	redParams.Add("code", authorizeRes.AuthorizeCode)
-	redParams.Add("state", params.State)
+	utils.DeleteAndSaveSession(deleteSession, sess, ctx.Request(), ctx.Response())
 
-	response.CallbackUrl = fmt.Sprintf("%v?%v", callbackUrl, redParams.Encode())
-
-	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(reqDefaultRes, true, response))
+	return ctx.Redirect(http.StatusSeeOther, u.String())
 }
