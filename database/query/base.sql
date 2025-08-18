@@ -1,4 +1,13 @@
-create schema if not exists sso;
+-- run from root access
+create user sso with password 'asd123qwe';
+
+create database sso;
+
+--connect to db sso first
+create schema if not exists sso authorization sso;
+
+grant all on all tables in schema sso to sso;
+-- end
 
 create table if not exists sso.users (
 	id varchar(50) primary key,
