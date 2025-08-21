@@ -15,7 +15,7 @@ config:
       path:
         callback: "/v1/api/callback"
     redirect_fe:
-      login: ""
+      login: "http://localhost:5174/"
   verifier:
     age: 300 #seconds
     domain: "localhost"

@@ -63,7 +63,7 @@ where
 insert into auths
 (
     code,
-    type,
+    user_id,
     insert_date
 )
 values

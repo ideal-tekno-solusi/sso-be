@@ -32,6 +32,7 @@ create table if not exists sessions (
 
 create table if not exists auths (
 	code varchar(255),
-	type varchar(7),
-	insert_date timestamp not null
+	user_id varchar(50) references sso.users(id) on delete cascade,
+	insert_date timestamp not null,
+	use_date timestamp
 );

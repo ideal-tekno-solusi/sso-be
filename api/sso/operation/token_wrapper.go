@@ -9,18 +9,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// type TokenRequest struct {
-// 	Code         string `json:"code" validate:"required"`
-// 	CodeVerifier string `json:"codeVerifier" validate:"required"`
-// }
-
 type TokenRequest struct {
-	GrantType    string `json:"grant_type" validate:"required"`
-	Code         string `json:"code"`
-	RefreshToken string `json:"refresh_code"`
+	GrantType    string `json:"grant_type" validate:"required,oneofci=authorization_code refresh"`
+	Code         string `json:"code" validate:"required"`
 	RedirectUri  string `json:"redirect_uri"`
 	CodeVerifier string `json:"code_verifier"`
-	ClientId     string `json:"client_id"`
+	ClientId     string `json:"client_id" validate:"required"`
 	ClientSecret string `json:"client_secret"`
 }
 

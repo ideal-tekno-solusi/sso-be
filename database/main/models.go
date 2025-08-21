@@ -10,8 +10,9 @@ import (
 
 type Auth struct {
 	Code       pgtype.Text
-	Type       pgtype.Text
+	UserID     pgtype.Text
 	InsertDate pgtype.Timestamp
+	UseDate    pgtype.Timestamp
 }
 
 type Client struct {

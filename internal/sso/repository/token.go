@@ -1,10 +1,12 @@
 package repository
 
+import (
+	database "app/database/main"
+	"context"
+)
+
 type Token interface {
-	// GetToken(ctx context.Context, codeChallenge string) (*database.GetTokenRow, error)
-	// DeleteAuthToken(ctx context.Context, sessionId string) error
-	// DeleteSession(ctx context.Context, sessionId string) error
-	// CreateRefreshToken(ctx context.Context, refreshToken, userId string) error
+	GetClient(ctx context.Context, id string) (*database.GetClientRow, error)
 }
 
 type TokenService struct {

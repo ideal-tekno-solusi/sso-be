@@ -15,7 +15,7 @@ const createAuth = `-- name: CreateAuth :exec
 insert into auths
 (
     code,
-    type,
+    user_id,
     insert_date
 )
 values
@@ -27,12 +27,12 @@ values
 `
 
 type CreateAuthParams struct {
-	Code pgtype.Text
-	Type pgtype.Text
+	Code   pgtype.Text
+	UserID pgtype.Text
 }
 
 func (q *Queries) CreateAuth(ctx context.Context, arg CreateAuthParams) error {
-	_, err := q.db.Exec(ctx, createAuth, arg.Code, arg.Type)
+	_, err := q.db.Exec(ctx, createAuth, arg.Code, arg.UserID)
 	return err
 }
 

@@ -3,6 +3,8 @@ services:
   port: 8080
 
 config:
+  session:
+    secret: fa7168ff4543c7458c26748786ed596d2730a6a8
   url:
     internal:
       domain: "https://sso.idtecsi.my.id"

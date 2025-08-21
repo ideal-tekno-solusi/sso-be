@@ -3,6 +3,8 @@ services:
   port: 8080
 
 config:
+  session:
+    secret: fa7168ff4543c7458c26748786ed596d2730a6a8
   url:
     internal:
       domain: "http://localhost:8080"
@@ -13,7 +15,7 @@ config:
       path:
         callback: "/v1/api/callback"
     redirect_fe:
-      login: ""
+      login: "http://localhost:5174/"
   verifier:
     age: 300 #seconds
     domain: "localhost"

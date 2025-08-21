@@ -128,7 +128,9 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	//? set session to cookies
 	dataSessions := map[string]interface{}{
-		"guid": guid,
+		"guid":                  guid,
+		"code_Challenge":        req.CodeChallenge,
+		"code_challenge_method": req.CodeChallengeMethod,
 	}
 
 	err = utils.SetAndSaveSession(dataSessions, sess, ctx.Request(), ctx.Response())

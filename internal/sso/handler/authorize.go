@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 )
 
 func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeRequest) error {
@@ -63,12 +64,22 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 			return nil
 		}
 
+		redirectFe := viper.GetString("config.url.redirect_fe.login")
+
 		//TODO: ganti ke redirect auth server login page
-		return ctx.NoContent(http.StatusNotImplemented)
+		return ctx.Redirect(http.StatusMovedPermanently, redirectFe)
 	}
 
 	//? if guid found, then current request can skip login and continue process auth code
 	guid := sess.Values["guid"]
+	if guid == nil {
+		errorMessage := "session not found, please clear cache and try to login again"
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
 
 	existSession, err := authorizeService.GetSession(context, guid.(string))
 	if err != nil {
@@ -125,8 +136,6 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	//TODO: coba cek masih perlu validasi lain ga, klo ga ada langsung simpen auth code nya ke db dan lanjut ke /token dengan flow jika auth code ditemukan langsung hapus
-
 	authorizeCode, err := utils.GenerateRandomString(64)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to generate auth code with error: %v", err)
@@ -141,5 +150,17 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		AuthorizeCode: *authorizeCode,
 	}
 
+	//? save auth code and user id to db
+	err = authorizeService.CreateAuth(context, *authorizeCode, existSession.UserID.String)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to create auth with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	//TODO: redirect ke fe /redirect harusnya disini
 	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, res))
 }
