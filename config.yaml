@@ -25,7 +25,7 @@ config:
   cors:
     allow_origins:
       - "*"
-  debug: true
+  debug: false
 
 secret:
   expToken: 300 #minute

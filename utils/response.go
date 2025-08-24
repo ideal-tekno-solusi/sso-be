@@ -20,7 +20,7 @@ func GenerateResponseJson(baseResponse *DefaultResponse, isSuccess bool, data an
 	if baseResponse == nil {
 		return DefaultResponse{
 			Guid:      uuid.NewString(),
-			Timestamp: time.Now().Format("2006-01-02 15:04:05 MST"),
+			Timestamp: time.Now().Format(time.RFC3339),
 			IsSuccess: isSuccess,
 			Data:      data,
 		}

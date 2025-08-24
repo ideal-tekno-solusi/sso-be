@@ -6,9 +6,10 @@ type TokenRequest struct {
 }
 
 type Token struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpiresIn    int    `json:"expiresIn"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    int    `json:"expires_in"`
 	Scope        string `json:"scope"`
-	TokenType    string `json:"tokenType"`
+	TokenType    string `json:"token_type"`
+	RedirectUrl  string `json:"redirect_url"`
 }

@@ -16,8 +16,8 @@ TODO:
 new TODO:
 - [x] rework /login to just validate username and password, then return valid or not, later auth fe that will do request to /auth
 - [x] rework /auth
-- [ ] rework /token to serve token and refresh token
-- [ ] change all logrus from controller to use one from utils
+- [x] rework /token to serve token and refresh token
+- [x] change all logrus from controller to use one from utils
 - [ ] clean up
 
 # note

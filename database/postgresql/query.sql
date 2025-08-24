@@ -63,6 +63,8 @@ where
 insert into auths
 (
     code,
+    scope,
+    type,
     user_id,
     insert_date
 )
@@ -70,6 +72,8 @@ values
 (
     $1,
     $2,
+    $3,
+    $4,
     now()
 );
 
@@ -82,3 +86,27 @@ from
     sessions
 where
     id = $1;
+
+-- name: GetAuth :one
+select
+    a.code,
+    a.scope,
+    t.name as type,
+    a.user_id
+from
+    auths as a
+join
+    auth_types as t
+on
+    a.type = t.id
+where
+    code = $1
+and
+    use_date is null;
+
+-- name: UpdateAuth :exec
+update auths
+set
+    use_date = now()
+where
+    code = $1;

@@ -151,7 +151,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	query.Add("response_type", req.ResponseType)
 	query.Add("client_id", req.ClientId)
 	query.Add("redirect_url", req.RedirectUrl)
-	query.Add("scopes", req.Scopes)
+	query.Add("scope", req.Scope)
 	query.Add("state", req.State)
 	query.Add("code_challenge", req.CodeChallenge)
 	query.Add("code_challenge_method", req.CodeChallengeMethod)
@@ -175,5 +175,5 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	utils.DeleteAndSaveSession(deleteSession, sess, ctx.Request(), ctx.Response())
 
-	return ctx.Redirect(http.StatusSeeOther, u.String())
+	return ctx.Redirect(http.StatusFound, u.String())
 }

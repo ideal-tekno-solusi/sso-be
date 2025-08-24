@@ -12,7 +12,7 @@ type Authorize interface {
 	GetClient(ctx context.Context, id string) (*database.GetClientRow, error)
 	FetchClientRedirects(ctx context.Context, id string) (*[]database.FetchClientRedirectsRow, error)
 	GetSession(ctx context.Context, id string) (*database.Session, error)
-	CreateAuth(ctx context.Context, authorizeCode, userId string) error
+	CreateAuth(ctx context.Context, authorizeCode, scope, userId string, authType int) error
 }
 
 type AuthorizeService struct {
@@ -69,12 +69,17 @@ func (r *Repository) GetSession(ctx context.Context, id string) (*database.Sessi
 	return &data, nil
 }
 
-func (r *Repository) CreateAuth(ctx context.Context, authorizeCode, userId string) error {
+func (r *Repository) CreateAuth(ctx context.Context, authorizeCode, scope, userId string, authType int) error {
 	args := database.CreateAuthParams{
 		Code: pgtype.Text{
 			String: authorizeCode,
 			Valid:  true,
 		},
+		Scope: pgtype.Text{
+			String: scope,
+			Valid:  true,
+		},
+		Type: int32(authType),
 		UserID: pgtype.Text{
 			String: userId,
 			Valid:  true,

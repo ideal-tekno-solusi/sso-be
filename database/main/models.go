@@ -10,9 +10,16 @@ import (
 
 type Auth struct {
 	Code       pgtype.Text
+	Scope      pgtype.Text
+	Type       int32
 	UserID     pgtype.Text
 	InsertDate pgtype.Timestamp
 	UseDate    pgtype.Timestamp
+}
+
+type AuthType struct {
+	ID   int32
+	Name string
 }
 
 type Client struct {
@@ -30,7 +37,7 @@ type ClientRedirect struct {
 
 type ClientType struct {
 	ID   int32
-	Name pgtype.Text
+	Name string
 }
 
 type Session struct {

@@ -13,7 +13,7 @@ type AuthorizeRequest struct {
 	RedirectUrl         string `json:"redirect_url" query:"redirect_url" validate:"required"`
 	ClientId            string `json:"client_id" query:"client_id" validate:"required"`
 	ResponseType        string `json:"response_type" query:"response_type" validate:"required,oneofci=code refresh"`
-	Scopes              string `json:"scopes" query:"scopes"`
+	Scope               string `json:"scope" query:"scope"`
 	State               string `json:"state" query:"state" validate:"required"`
 	CodeChallenge       string `json:"code_challenge" query:"code_challenge" validate:"required"`
 	CodeChallengeMethod string `json:"code_challenge_method" query:"code_challenge_method" validate:"required,eq=S256"`

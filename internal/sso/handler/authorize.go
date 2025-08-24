@@ -2,7 +2,6 @@ package handler
 
 import (
 	"app/api/sso/operation"
-	"app/internal/sso/entity"
 	"app/internal/sso/logic"
 	"app/internal/sso/repository"
 	"app/utils"
@@ -10,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
@@ -25,6 +25,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	lc := logic.InitLogic()
 	authorizeService := repository.AuthorizeRepository(repo)
 	authorizeLogic := logic.AuthorizeLogic(lc)
+	redirectFe := viper.GetString("config.url.redirect_fe.login")
 
 	//? get session, will create new if not found
 	sess, err := session.Get("session", ctx)
@@ -64,10 +65,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 			return nil
 		}
 
-		redirectFe := viper.GetString("config.url.redirect_fe.login")
-
-		//TODO: ganti ke redirect auth server login page
-		return ctx.Redirect(http.StatusMovedPermanently, redirectFe)
+		return ctx.Redirect(http.StatusFound, redirectFe)
 	}
 
 	//? if guid found, then current request can skip login and continue process auth code
@@ -94,8 +92,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		errorMessage := "session not exist, please login again later"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
-		//TODO: redirect ke auth server login page karena sesi tidak ketemu
-		return ctx.NoContent(http.StatusNotImplemented)
+		return ctx.Redirect(http.StatusFound, redirectFe)
 	}
 
 	client, err := authorizeService.GetClient(context, params.ClientId)
@@ -146,12 +143,8 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	res := entity.AuthorizeResponse{
-		AuthorizeCode: *authorizeCode,
-	}
-
 	//? save auth code and user id to db
-	err = authorizeService.CreateAuth(context, *authorizeCode, existSession.UserID.String)
+	err = authorizeService.CreateAuth(context, *authorizeCode, params.Scope, existSession.UserID.String, 1)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to create auth with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -161,6 +154,21 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	//TODO: redirect ke fe /redirect harusnya disini
-	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, res))
+	//? set up redirect to /callback fe
+	query := url.Values{}
+	query.Add("code", *authorizeCode)
+
+	u, err := url.Parse(params.RedirectUrl)
+	if err != nil {
+		errorMessage := fmt.Sprintf("failed to parse url with error: %v", err)
+		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
+
+		return nil
+	}
+
+	u.RawQuery = query.Encode()
+
+	return ctx.JSON(http.StatusFound, u.String())
 }

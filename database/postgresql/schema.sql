@@ -13,7 +13,7 @@ create table if not exists client_redirects (
 
 create table if not exists client_types (
 	id int primary key,
-	name varchar(10)
+	name varchar(10) not null
 );
 
 create table if not exists users (
@@ -32,7 +32,14 @@ create table if not exists sessions (
 
 create table if not exists auths (
 	code varchar(255),
+	scope varchar(100),
+	type int not null,
 	user_id varchar(50) references sso.users(id) on delete cascade,
 	insert_date timestamp not null,
 	use_date timestamp
+);
+
+create table if not exists auth_types (
+	id int primary key,
+	name varchar(10) not null
 );

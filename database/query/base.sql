@@ -72,7 +72,7 @@ create table if not exists sso.client_redirects (
 
 create table if not exists sso.client_types (
 	id int primary key,
-	name varchar(10)
+	name varchar(10) not null
 );
 
 create table if not exists sso.users (
@@ -91,10 +91,17 @@ create table if not exists sso.sessions (
 
 create table if not exists sso.auths (
 	code varchar(255),
+	scope varchar(100),
+	type int not null,
 	user_id varchar(50) references sso.users(id) on delete cascade,
 	insert_date timestamp not null,
 	use_date timestamp
 );
+
+create table if not exists sso.auth_types (
+	id int primary key,
+	name varchar(10) not null
+)
 
 insert into sso.clients (
 	id,
@@ -118,6 +125,10 @@ insert into sso.client_redirects (
 values (
 	'INVENTORY_APP_01',
 	'http://localhost:8051/redirect'
+),
+(
+	'INVENTORY_APP_01',
+	'http://localhost:5173/oauth-callback'
 );
 
 insert into sso.client_types (
@@ -142,4 +153,17 @@ values (
 	'1997-06-10',
 	'$2a$15$xwGZGcKIURe1kwSt7zTrrOwCCwOfmN9K5SqOu32sJdGj67FJEUfou',
 	now()
+);
+
+insert into sso.auth_types (
+	id,
+	name
+)
+values (
+	1,
+	'CODE'
+),
+(
+	2,
+	'REFRESH'
 );

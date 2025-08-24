@@ -15,6 +15,8 @@ const createAuth = `-- name: CreateAuth :exec
 insert into auths
 (
     code,
+    scope,
+    type,
     user_id,
     insert_date
 )
@@ -22,17 +24,26 @@ values
 (
     $1,
     $2,
+    $3,
+    $4,
     now()
 )
 `
 
 type CreateAuthParams struct {
 	Code   pgtype.Text
+	Scope  pgtype.Text
+	Type   int32
 	UserID pgtype.Text
 }
 
 func (q *Queries) CreateAuth(ctx context.Context, arg CreateAuthParams) error {
-	_, err := q.db.Exec(ctx, createAuth, arg.Code, arg.UserID)
+	_, err := q.db.Exec(ctx, createAuth,
+		arg.Code,
+		arg.Scope,
+		arg.Type,
+		arg.UserID,
+	)
 	return err
 }
 
@@ -100,6 +111,43 @@ func (q *Queries) FetchClientRedirects(ctx context.Context, id string) ([]FetchC
 	return items, nil
 }
 
+const getAuth = `-- name: GetAuth :one
+select
+    a.code,
+    a.scope,
+    t.name as type,
+    a.user_id
+from
+    auths as a
+join
+    auth_types as t
+on
+    a.type = t.id
+where
+    code = $1
+and
+    use_date is null
+`
+
+type GetAuthRow struct {
+	Code   pgtype.Text
+	Scope  pgtype.Text
+	Type   string
+	UserID pgtype.Text
+}
+
+func (q *Queries) GetAuth(ctx context.Context, code pgtype.Text) (GetAuthRow, error) {
+	row := q.db.QueryRow(ctx, getAuth, code)
+	var i GetAuthRow
+	err := row.Scan(
+		&i.Code,
+		&i.Scope,
+		&i.Type,
+		&i.UserID,
+	)
+	return i, err
+}
+
 const getClient = `-- name: GetClient :one
 select
     c.id,
@@ -120,7 +168,7 @@ where
 type GetClientRow struct {
 	ID            string
 	Name          string
-	Type          pgtype.Text
+	Type          string
 	Secret        pgtype.Text
 	TokenLivetime pgtype.Int8
 }
@@ -185,6 +233,19 @@ func (q *Queries) GetUser(ctx context.Context, id string) (GetUserRow, error) {
 		&i.Password,
 	)
 	return i, err
+}
+
+const updateAuth = `-- name: UpdateAuth :exec
+update auths
+set
+    use_date = now()
+where
+    code = $1
+`
+
+func (q *Queries) UpdateAuth(ctx context.Context, code pgtype.Text) error {
+	_, err := q.db.Exec(ctx, updateAuth, code)
+	return err
 }
 
 const updateSession = `-- name: UpdateSession :exec
