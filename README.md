@@ -18,6 +18,7 @@ new TODO:
 - [x] rework /auth
 - [x] rework /token to serve token and refresh token
 - [x] change all logrus from controller to use one from utils
+- [ ] search a method to clean up auth code for refresh if it's not used for too long (7 days)
 - [ ] clean up
 
 # note

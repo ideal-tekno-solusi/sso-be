@@ -53,19 +53,21 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	//? run this flow if grant type is refresh
+	//? run this flow if grant type is refresh and refresh token not provided in req
 	if params.GrantType == "refresh" {
-		refreshToken := sess.Values["refresh_token"]
-		if refreshToken == nil {
-			errorMessage := "refresh token not found, please login again"
-			utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+		if params.Code == "" {
+			refreshToken := sess.Values["refresh_token"]
+			if refreshToken == nil {
+				errorMessage := "refresh token not found, please login again"
+				utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
-			utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+				utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
-			return nil
+				return nil
+			}
+
+			params.Code = refreshToken.(string)
 		}
-
-		params.Code = refreshToken.(string)
 	}
 
 	//? check if client exist first
