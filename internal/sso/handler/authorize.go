@@ -170,5 +170,5 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 
 	u.RawQuery = query.Encode()
 
-	return ctx.JSON(http.StatusFound, u.String())
+	return ctx.Redirect(http.StatusFound, u.String())
 }
