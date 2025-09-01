@@ -9,7 +9,7 @@ config:
     internal:
       domain: "http://localhost:8080"
       path:
-        authorize: "/auth/api/authorize"
+        authorize: "/api/v1/authorize"
     inventory:
       domain: "http://localhost:8081"
       path:

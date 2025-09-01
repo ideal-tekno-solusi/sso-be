@@ -9,7 +9,7 @@ config:
     internal:
       domain: "https://sso.idtecsi.my.id"
       path:
-        authorize: "/auth/api/authorize"
+        authorize: "/api/v1/authorize"
     inventory:
       domain: "https://inventory.idtecsi.my.id"
       path:
