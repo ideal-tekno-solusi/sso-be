@@ -7,9 +7,9 @@ import (
 )
 
 func Router(r *echo.Echo, s Service) {
-	auth := r.Group("/auth")
-	auth.GET("/api/authorize", operation.AuthorizeWrapper(s.Authorize))
-	auth.POST("/api/login", operation.LoginWrapper(s.Login))
-	auth.POST("/api/token", operation.TokenWrapper(s.Token))
-	auth.GET("/api/user", operation.UserWrapper(s.User))
+	api := r.Group("/api")
+	api.GET("/v1/authorize", operation.AuthorizeWrapper(s.Authorize))
+	api.POST("/v1/login", operation.LoginWrapper(s.Login))
+	api.POST("/v1/token", operation.TokenWrapper(s.Token))
+	api.GET("/v1/user", operation.UserWrapper(s.User))
 }
