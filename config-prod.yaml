@@ -15,7 +15,7 @@ config:
       path:
         callback: "/v1/api/callback"
     redirect_fe:
-      login: "http://localhost:5174/"
+      login: "https://login.idtecsi.my.id/login"
   verifier:
     age: 300 #seconds
     domain: ".idtecsi.my.id"
