@@ -13,6 +13,14 @@ TODO:
 - [x] create logic to verify code challenge oauth 2.0
 - [x] remove csrf and create new api "omni sso" to handle login and GET refresh token, ofcourse with csrf turn on
 
+new TODO:
+- [x] rework /login to just validate username and password, then return valid or not, later auth fe that will do request to /auth
+- [x] rework /auth
+- [x] rework /token to serve token and refresh token
+- [x] change all logrus from controller to use one from utils
+- [ ] search a method to clean up auth code for refresh if it's not used for too long (7 days)
+- [ ] clean up
+
 # note
 - after edit query in database/postgresql/query.sql, dont forget to run `sqlc generate`
 - this project is made without minding it's securities, this project solely for POC of how fully build enterprise software works internally

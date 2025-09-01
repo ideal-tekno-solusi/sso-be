@@ -13,6 +13,8 @@ import (
 	vd "app/api/middleware"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -28,15 +30,30 @@ func main() {
 
 	cfg := bootstrap.InitContainer()
 
+	allowOrigins := viper.GetStringSlice("config.cors.allow_origins")
+
 	// TODO: cek lagi CORS ini
 	r.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           36000,
 	}))
+
+	//? set up config for session
+	key := viper.GetString("config.session.secret")
+	store := sessions.NewCookieStore([]byte(key))
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	r.Use(session.Middleware(store))
 
 	api.RegisterApi(r, cfg)
 

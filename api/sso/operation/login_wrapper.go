@@ -10,15 +10,8 @@ import (
 )
 
 type LoginRequest struct {
-	Username            string `json:"username" validate:"required"`
-	Password            string `json:"password" validate:"required"`
-	RedirectUrl         string `json:"redirectUrl" validate:"required"`
-	ClientId            string `json:"clientId" validate:"required"`
-	ResponseType        string `json:"responseType" validate:"required,oneofci=code refresh"`
-	Scopes              string `json:"scopes"`
-	State               string `json:"state" validate:"required"`
-	CodeChallenge       string `json:"codeChallenge" validate:"required"`
-	CodeChallengeMethod string `json:"codeChallengeMethod" validate:"required,eq=S256"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 func LoginWrapper(handler func(e echo.Context, params *LoginRequest) error) echo.HandlerFunc {

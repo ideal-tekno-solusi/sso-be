@@ -8,27 +8,42 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type AuthorizationToken struct {
-	ID         string
-	SessionID  pgtype.Text
-	InsertDate pgtype.Timestamp
-}
-
-type RefreshToken struct {
-	ID         string
+type Auth struct {
+	Code       pgtype.Text
+	Scope      pgtype.Text
+	Type       int32
 	UserID     pgtype.Text
 	InsertDate pgtype.Timestamp
+	UseDate    pgtype.Timestamp
+}
+
+type AuthType struct {
+	ID   int32
+	Name string
+}
+
+type Client struct {
+	ID            string
+	Name          string
+	Type          int32
+	Secret        pgtype.Text
+	TokenLivetime pgtype.Int8
+}
+
+type ClientRedirect struct {
+	ClientID pgtype.Text
+	Uri      string
+}
+
+type ClientType struct {
+	ID   int32
+	Name string
 }
 
 type Session struct {
-	ID                  string
-	UserID              pgtype.Text
-	ClientID            string
-	CodeChallenge       string
-	CodeChallengeMethod string
-	Scopes              pgtype.Text
-	RedirectUrl         pgtype.Text
-	InsertDate          pgtype.Timestamp
+	ID         pgtype.Text
+	UserID     pgtype.Text
+	InsertDate pgtype.Timestamp
 }
 
 type User struct {

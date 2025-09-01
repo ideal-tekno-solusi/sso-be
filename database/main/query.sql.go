@@ -11,221 +11,196 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAuthToken = `-- name: CreateAuthToken :exec
-insert into authorization_tokens
+const createAuth = `-- name: CreateAuth :exec
+insert into auths
 (
-    id,
-    session_id,
-    insert_date
-)
-values
-(
-    $1,
-    $2,
-    now()
-)
-`
-
-type CreateAuthTokenParams struct {
-	ID        string
-	SessionID pgtype.Text
-}
-
-func (q *Queries) CreateAuthToken(ctx context.Context, arg CreateAuthTokenParams) error {
-	_, err := q.db.Exec(ctx, createAuthToken, arg.ID, arg.SessionID)
-	return err
-}
-
-const createRefreshToken = `-- name: CreateRefreshToken :exec
-insert into refresh_tokens
-(
-    id,
+    code,
+    scope,
+    type,
     user_id,
     insert_date
 )
 values
 (
-    $1,
-    $2,
-    now()
-)
-`
-
-type CreateRefreshTokenParams struct {
-	ID     string
-	UserID pgtype.Text
-}
-
-func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) error {
-	_, err := q.db.Exec(ctx, createRefreshToken, arg.ID, arg.UserID)
-	return err
-}
-
-const createSession = `-- name: CreateSession :exec
-insert into sessions (
-    id,
-    user_id,
-    client_id,
-    code_challenge,
-    code_challenge_method,
-    scopes,
-    redirect_url,
-    insert_date
-)
-values (
     $1,
     $2,
     $3,
     $4,
-    $5,
-    $6,
-    $7,
+    now()
+)
+`
+
+type CreateAuthParams struct {
+	Code   pgtype.Text
+	Scope  pgtype.Text
+	Type   int32
+	UserID pgtype.Text
+}
+
+func (q *Queries) CreateAuth(ctx context.Context, arg CreateAuthParams) error {
+	_, err := q.db.Exec(ctx, createAuth,
+		arg.Code,
+		arg.Scope,
+		arg.Type,
+		arg.UserID,
+	)
+	return err
+}
+
+const createSession = `-- name: CreateSession :exec
+insert into sessions
+(
+    id,
+    user_id,
+    insert_date
+)
+values
+(
+    $1,
+    $2,
     now()
 )
 `
 
 type CreateSessionParams struct {
-	ID                  string
-	UserID              pgtype.Text
-	ClientID            string
-	CodeChallenge       string
-	CodeChallengeMethod string
-	Scopes              pgtype.Text
-	RedirectUrl         pgtype.Text
+	ID     pgtype.Text
+	UserID pgtype.Text
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) error {
-	_, err := q.db.Exec(ctx, createSession,
-		arg.ID,
-		arg.UserID,
-		arg.ClientID,
-		arg.CodeChallenge,
-		arg.CodeChallengeMethod,
-		arg.Scopes,
-		arg.RedirectUrl,
-	)
+	_, err := q.db.Exec(ctx, createSession, arg.ID, arg.UserID)
 	return err
 }
 
-const deleteAuthToken = `-- name: DeleteAuthToken :exec
-delete from authorization_tokens
-where session_id = $1
-`
-
-func (q *Queries) DeleteAuthToken(ctx context.Context, sessionID pgtype.Text) error {
-	_, err := q.db.Exec(ctx, deleteAuthToken, sessionID)
-	return err
-}
-
-const deleteRefreshToken = `-- name: DeleteRefreshToken :exec
-delete from refresh_tokens
-where id = $1
-`
-
-func (q *Queries) DeleteRefreshToken(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteRefreshToken, id)
-	return err
-}
-
-const deleteSession = `-- name: DeleteSession :exec
-delete from sessions
-where id = $1
-`
-
-func (q *Queries) DeleteSession(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteSession, id)
-	return err
-}
-
-const getRefreshToken = `-- name: GetRefreshToken :one
+const fetchClientRedirects = `-- name: FetchClientRedirects :many
 select
-    id,
-    user_id,
-    insert_date
+    c.id,
+    r.uri
 from
-    refresh_tokens
+    client_redirects as r
+join
+    clients as c
+on
+    r.client_id = c.id
 where
-    id = $1
+    c.id = $1
 `
 
-func (q *Queries) GetRefreshToken(ctx context.Context, id string) (RefreshToken, error) {
-	row := q.db.QueryRow(ctx, getRefreshToken, id)
-	var i RefreshToken
-	err := row.Scan(&i.ID, &i.UserID, &i.InsertDate)
+type FetchClientRedirectsRow struct {
+	ID  string
+	Uri string
+}
+
+func (q *Queries) FetchClientRedirects(ctx context.Context, id string) ([]FetchClientRedirectsRow, error) {
+	rows, err := q.db.Query(ctx, fetchClientRedirects, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FetchClientRedirectsRow
+	for rows.Next() {
+		var i FetchClientRedirectsRow
+		if err := rows.Scan(&i.ID, &i.Uri); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAuth = `-- name: GetAuth :one
+select
+    a.code,
+    a.scope,
+    t.name as type,
+    a.user_id
+from
+    auths as a
+join
+    auth_types as t
+on
+    a.type = t.id
+where
+    code = $1
+and
+    use_date is null
+`
+
+type GetAuthRow struct {
+	Code   pgtype.Text
+	Scope  pgtype.Text
+	Type   string
+	UserID pgtype.Text
+}
+
+func (q *Queries) GetAuth(ctx context.Context, code pgtype.Text) (GetAuthRow, error) {
+	row := q.db.QueryRow(ctx, getAuth, code)
+	var i GetAuthRow
+	err := row.Scan(
+		&i.Code,
+		&i.Scope,
+		&i.Type,
+		&i.UserID,
+	)
+	return i, err
+}
+
+const getClient = `-- name: GetClient :one
+select
+    c.id,
+    c.name,
+    t.name as type,
+    c.secret,
+    c.token_livetime
+from
+    clients as c
+join
+    client_types as t
+on
+    c.type = t.id
+where
+    c.id = $1
+`
+
+type GetClientRow struct {
+	ID            string
+	Name          string
+	Type          string
+	Secret        pgtype.Text
+	TokenLivetime pgtype.Int8
+}
+
+func (q *Queries) GetClient(ctx context.Context, id string) (GetClientRow, error) {
+	row := q.db.QueryRow(ctx, getClient, id)
+	var i GetClientRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.Secret,
+		&i.TokenLivetime,
+	)
 	return i, err
 }
 
 const getSession = `-- name: GetSession :one
 select
-    client_id,
-    code_challenge,
-    code_challenge_method
+    id,
+    user_id,
+    insert_date
 from
     sessions
 where
     id = $1
 `
 
-type GetSessionRow struct {
-	ClientID            string
-	CodeChallenge       string
-	CodeChallengeMethod string
-}
-
-func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, error) {
+func (q *Queries) GetSession(ctx context.Context, id pgtype.Text) (Session, error) {
 	row := q.db.QueryRow(ctx, getSession, id)
-	var i GetSessionRow
-	err := row.Scan(&i.ClientID, &i.CodeChallenge, &i.CodeChallengeMethod)
-	return i, err
-}
-
-const getToken = `-- name: GetToken :one
-select
-    auth.id,
-    auth.session_id,
-    sess.code_challenge,
-    sess.scopes,
-    sess.redirect_url,
-    us.id as username,
-    us.name
-from
-    authorization_tokens auth
-join
-    sessions sess
-on
-    auth.session_id = sess.id
-join
-    users us
-on
-    sess.user_id = us.id
-where
-    sess.code_challenge = $1
-order by
-    auth.insert_date desc
-`
-
-type GetTokenRow struct {
-	ID            string
-	SessionID     pgtype.Text
-	CodeChallenge string
-	Scopes        pgtype.Text
-	RedirectUrl   pgtype.Text
-	Username      string
-	Name          string
-}
-
-func (q *Queries) GetToken(ctx context.Context, codeChallenge string) (GetTokenRow, error) {
-	row := q.db.QueryRow(ctx, getToken, codeChallenge)
-	var i GetTokenRow
-	err := row.Scan(
-		&i.ID,
-		&i.SessionID,
-		&i.CodeChallenge,
-		&i.Scopes,
-		&i.RedirectUrl,
-		&i.Username,
-		&i.Name,
-	)
+	var i Session
+	err := row.Scan(&i.ID, &i.UserID, &i.InsertDate)
 	return i, err
 }
 
@@ -258,4 +233,35 @@ func (q *Queries) GetUser(ctx context.Context, id string) (GetUserRow, error) {
 		&i.Password,
 	)
 	return i, err
+}
+
+const updateAuth = `-- name: UpdateAuth :exec
+update auths
+set
+    use_date = now()
+where
+    code = $1
+`
+
+func (q *Queries) UpdateAuth(ctx context.Context, code pgtype.Text) error {
+	_, err := q.db.Exec(ctx, updateAuth, code)
+	return err
+}
+
+const updateSession = `-- name: UpdateSession :exec
+update sessions
+set
+    user_id = $1
+where
+    id = $2
+`
+
+type UpdateSessionParams struct {
+	UserID pgtype.Text
+	ID     pgtype.Text
+}
+
+func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) error {
+	_, err := q.db.Exec(ctx, updateSession, arg.UserID, arg.ID)
+	return err
 }
