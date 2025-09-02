@@ -27,6 +27,7 @@ config:
     allow_origins:
       - "https://login.idtecsi.my.id"
       - "https://inventory.idtecsi.my.id"
+      - "http://localhost:2000"
   debug: false
 
 secret:
