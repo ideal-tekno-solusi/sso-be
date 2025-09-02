@@ -50,7 +50,7 @@ func main() {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	r.Use(session.Middleware(store))
