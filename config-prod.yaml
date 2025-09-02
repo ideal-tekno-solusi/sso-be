@@ -28,6 +28,8 @@ config:
       - "https://login.idtecsi.my.id"
       - "https://inventory.idtecsi.my.id"
       - "http://localhost:2000"
+      - "http://localhost:5713"
+      - "http://localhost:5714"
   debug: false
 
 secret:
