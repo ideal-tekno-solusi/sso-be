@@ -5,57 +5,60 @@ services:
 config:
   session:
     secret: fa7168ff4543c7458c26748786ed596d2730a6a8
-    domain: localhost
+    domain: ".idtecsi.my.id"
   url:
     internal:
-      domain: "http://localhost:8080"
+      domain: "https://sso.idtecsi.my.id"
       path:
         authorize: "/api/v1/authorize"
     inventory:
-      domain: "http://localhost:8081"
+      domain: "https://inventory.idtecsi.my.id"
       path:
         callback: "/v1/api/callback"
     redirect_fe:
-      login: "http://localhost:3000/"
+      login: "https://login.idtecsi.my.id/login"
   verifier:
     age: 300 #seconds
-    domain: "localhost"
+    domain: ".idtecsi.my.id"
     path: "/"
-    secure: false
+    secure: true
     httponly: true
   cors:
     allow_origins:
-      - "http://localhost:3000"
-      - "http://localhost:5173"
+      - "https://login.idtecsi.my.id"
+      - "https://inventory.idtecsi.my.id"
+      - "http://localhost:2000"
+      - "http://localhost:5713"
+      - "http://localhost:5714"
   debug: false
 
 secret:
   expToken: 300 #minute
   refreshToken: 2880 #minute
   internal:
-    callback_url: "http://localhost:8081/v1/api/callback"
+    callback_url: "https://sso.idtecsi.my.id/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIC1wfYU7WzOZ4AnNph9xA0Z42XvdNJNCQ02GPNSVhc7eoAoGCCqGSM49\nAwEHoUQDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5q47xQgmZZUn5ZEd/Me8CPuVv\n+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEvXsnS6kT7zD5ebOS57gFv4+NHZx5\nq47xQgmZZUn5ZEd/Me8CPuVv+nCW2VY3cM1z3dcZ6c9LGokCRoIZ5s190g==\n-----END PUBLIC KEY-----"
   inventory:
-    callback_url: "http://localhost:8081/v1/api/callback"
+    callback_url: "https://inventory.idtecsi.my.id/v1/api/callback"
     key: ES256
     private: "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIHhNCyKahW3YrJcf+zcPm6MwJgKmXh3L7F6c9XV952W2oAoGCCqGSM49\nAwEHoUQDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2DxG2YYcNOdAtK6DFdsHH90sp\nhx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END EC PRIVATE KEY-----"
     public: "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE7tq65PUAh1NAomx9wxjwPwHt52G2\nDxG2YYcNOdAtK6DFdsHH90sphx663EI6XM/uFHAAhX1zbL39LgVT50PEnQ==\n-----END PUBLIC KEY-----"
 database:
   read:
     driver: postgresql
-    host: 192.168.0.250
+    host: 192.168.0.251
     port: 5432
-    database: postgres
+    database: sso
     schema: sso
-    username: postgres
+    username: sso
     password: asd123qwe
   write:
     driver: postgresql
-    host: 192.168.0.250
+    host: 192.168.0.251
     port: 5432
-    database: postgres
+    database: sso
     schema: sso
-    username: postgres
+    username: sso
     password: asd123qwe
