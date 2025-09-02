@@ -150,7 +150,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	query := url.Values{}
 	query.Add("response_type", req.ResponseType)
 	query.Add("client_id", req.ClientId)
-	query.Add("redirect_url", req.RedirectUrl)
+	query.Add("redirect_uri", req.RedirectUri)
 	query.Add("scope", req.Scope)
 	query.Add("state", req.State)
 	query.Add("code_challenge", req.CodeChallenge)

@@ -12,7 +12,7 @@ import (
 type TokenRequest struct {
 	GrantType    string `json:"grant_type" validate:"required,oneofci=authorization_code refresh"`
 	Code         string `json:"code"`
-	RedirectUrl  string `json:"redirect_url"`
+	RedirectUri  string `json:"redirect_uri"`
 	CodeVerifier string `json:"code_verifier"`
 	ClientId     string `json:"client_id" validate:"required"`
 	ClientSecret string `json:"client_secret"`

@@ -11,5 +11,5 @@ type Token struct {
 	ExpiresIn    int    `json:"expires_in"`
 	Scope        string `json:"scope"`
 	TokenType    string `json:"token_type"`
-	RedirectUrl  string `json:"redirect_url"`
+	RedirectUri  string `json:"redirect_uri"`
 }
