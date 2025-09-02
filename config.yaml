@@ -5,6 +5,7 @@ services:
 config:
   session:
     secret: fa7168ff4543c7458c26748786ed596d2730a6a8
+    domain: localhost
   url:
     internal:
       domain: "http://localhost:8080"
