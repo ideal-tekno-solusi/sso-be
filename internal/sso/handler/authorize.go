@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/api/sso/operation"
+	"app/internal/sso/entity"
 	"app/internal/sso/logic"
 	"app/internal/sso/repository"
 	"app/utils"
@@ -154,21 +155,11 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	//? set up redirect to /callback fe
-	query := url.Values{}
-	query.Add("code", *authorizeCode)
-
-	u, err := url.Parse(params.RedirectUri)
-	if err != nil {
-		errorMessage := fmt.Sprintf("failed to parse url with error: %v", err)
-		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
-
-		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
-
-		return nil
+	//? set up response
+	res := entity.Response{
+		RedirectUri: params.RedirectUri,
+		Code:        *authorizeCode,
 	}
 
-	u.RawQuery = query.Encode()
-
-	return ctx.Redirect(http.StatusFound, u.String())
+	return ctx.JSON(http.StatusOK, res)
 }
