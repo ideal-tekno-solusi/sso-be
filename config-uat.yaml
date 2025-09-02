@@ -25,7 +25,8 @@ config:
     httponly: true
   cors:
     allow_origins:
-      - "*"
+      - "http://localhost:3000"
+      - "http://localhost:5173"
   debug: false
 
 secret:
