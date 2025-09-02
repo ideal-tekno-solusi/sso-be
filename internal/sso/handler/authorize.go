@@ -113,7 +113,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	redirectUrls, err := authorizeService.FetchClientRedirects(context, params.ClientId)
+	redirectUris, err := authorizeService.FetchClientRedirects(context, params.ClientId)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to fetch redirect urls with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -123,7 +123,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	redirectValid := authorizeLogic.ValidateRedirectUrls(redirectUrls, params.RedirectUrl)
+	redirectValid := authorizeLogic.ValidateRedirectUris(redirectUris, params.RedirectUri)
 	if !redirectValid {
 		errorMessage := "redirect url invalid"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
@@ -158,7 +158,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	query := url.Values{}
 	query.Add("code", *authorizeCode)
 
-	u, err := url.Parse(params.RedirectUrl)
+	u, err := url.Parse(params.RedirectUri)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to parse url with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)

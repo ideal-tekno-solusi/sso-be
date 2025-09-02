@@ -226,7 +226,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		ExpiresIn:    int(tokenExpTime),
 		Scope:        auth.Scope.String,
 		TokenType:    "Bearer",
-		RedirectUrl:  params.RedirectUrl,
+		RedirectUri:  params.RedirectUri,
 	}
 
 	//? update auth use date so it didn't used twice

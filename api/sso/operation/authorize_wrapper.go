@@ -10,7 +10,7 @@ import (
 )
 
 type AuthorizeRequest struct {
-	RedirectUrl         string `json:"redirect_url" query:"redirect_url" validate:"required"`
+	RedirectUri         string `json:"redirect_uri" query:"redirect_uri" validate:"required"`
 	ClientId            string `json:"client_id" query:"client_id" validate:"required"`
 	ResponseType        string `json:"response_type" query:"response_type" validate:"required,oneofci=code refresh"`
 	Scope               string `json:"scope" query:"scope"`
