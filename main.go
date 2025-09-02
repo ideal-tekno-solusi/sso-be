@@ -44,10 +44,12 @@ func main() {
 
 	//? set up config for session
 	key := viper.GetString("config.session.secret")
+	domain := viper.GetString("config.session.domain")
 	store := sessions.NewCookieStore([]byte(key))
 	store.Options = &sessions.Options{
 		Path:     "/",
 		MaxAge:   86400 * 7,
+		Domain:   domain,
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
