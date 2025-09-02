@@ -158,6 +158,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	res := entity.Response{
 		RedirectUri: params.RedirectUri,
 		Code:        *authorizeCode,
+		State:       params.State,
 	}
 
 	return ctx.JSON(http.StatusOK, res)
