@@ -25,7 +25,8 @@ config:
     httponly: true
   cors:
     allow_origins:
-      - "*"
+      - "https://login.idtecsi.my.id"
+      - "https://inventory.idtecsi.my.id"
   debug: false
 
 secret:
