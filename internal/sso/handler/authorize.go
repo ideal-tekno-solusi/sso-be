@@ -71,8 +71,9 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	//? if guid found, then current request can skip login and continue process auth code
 	guid := sess.Values["guid"]
 	if guid == nil {
-		errorMessage := "session not found, please clear cache and try to login again"
+		errorMessage := "session not found, please try to login again"
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
+		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
