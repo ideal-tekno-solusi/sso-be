@@ -45,7 +45,7 @@ func (r *RestService) User(ctx echo.Context, params *operation.UserRequest) erro
 			return nil
 		}
 
-		params.Token = accessToken.(string)
+		params.Token = fmt.Sprintf("Bearer %v", accessToken.(string))
 	}
 
 	token := strings.Split(params.Token, " ")
