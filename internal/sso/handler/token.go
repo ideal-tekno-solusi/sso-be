@@ -53,23 +53,6 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	//? run this flow if grant type is refresh and refresh token not provided in req
-	if params.GrantType == "refresh" {
-		if params.Code == "" {
-			refreshToken := sess.Values["refresh_token"]
-			if refreshToken == nil {
-				errorMessage := "refresh token not found, please login again"
-				utils.WarningLog(errorMessage, ctx.Path(), serviceName)
-
-				utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
-
-				return nil
-			}
-
-			params.Code = refreshToken.(string)
-		}
-	}
-
 	//? check if client exist first
 	client, err := tokenService.GetClient(context, params.ClientId)
 	if err != nil {
@@ -99,6 +82,23 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		}
 	}
 
+	//? run this flow if grant type is refresh and client is SPA and refresh token not provided in req
+	if params.GrantType == "refresh" {
+		if params.Code == "" && client.Type == "SPA" {
+			refreshToken := sess.Values["refresh_token"]
+			if refreshToken == nil {
+				errorMessage := "refresh token not found, please login again"
+				utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+
+				utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+
+				return nil
+			}
+
+			params.Code = refreshToken.(string)
+		}
+	}
+  
 	if params.GrantType == "authorization_code" {
 		// //? generate code challenge from code verifier req
 		codeChallengeSource := sess.Values["code_Challenge"]
@@ -206,6 +206,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	if client.Type == "SPA" {
 		//? set session to cookies
 		dataSessions := map[string]interface{}{
+			"access_token":  accessToken,
 			"refresh_token": refreshToken,
 		}
 

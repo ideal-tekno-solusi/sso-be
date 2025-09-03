@@ -10,7 +10,7 @@ import (
 )
 
 type UserRequest struct {
-	Token string `header:"token" validate:"required"`
+	Token string `header:"token,omitempty"`
 }
 
 func UserWrapper(handler func(e echo.Context, params *UserRequest) error) echo.HandlerFunc {
