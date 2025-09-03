@@ -45,8 +45,9 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	//? check if user already login
 	guid := sess.Values["guid"]
 	if guid == nil {
-		errorMessage := "current user not login yet, please cleare cache and try to login again"
+		errorMessage := "current user not login yet, please try to login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -100,12 +101,13 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	if params.GrantType == "authorization_code" {
-		// //? generate code challenge from code verifier req
+		//? generate code challenge from code verifier req
 		codeChallengeSource := sess.Values["code_Challenge"]
 		codeChallengeMethodSource := sess.Values["code_challenge_method"]
 		if codeChallengeSource == nil || codeChallengeMethodSource == nil {
-			errorMessage := "code challenge not found, please cleare cache and try to login again"
+			errorMessage := "code challenge not found, please try to login again"
 			utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+			utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 			utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -142,8 +144,9 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 	if auth == nil {
-		errorMessage := "auth code not found, please clear cache and try login again"
+		errorMessage := "auth code not found, please try login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
@@ -160,23 +163,25 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 	if session == nil {
-		errorMessage := "session not found, please clear cache and try login again"
+		errorMessage := "session not found, please try login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
 	if session.UserID.String != auth.UserID.String {
-		errorMessage := "user of current auth is not same with current session, please clear cache and try login again"
+		errorMessage := "user of current auth is not same with current session, please try login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
+		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
 
 		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
 
-	// //? generate jwt token
+	//? generate jwt token
 	jwtBody := map[string]string{
 		"username": session.UserID.String,
 	}
