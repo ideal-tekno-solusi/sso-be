@@ -98,7 +98,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 			params.Code = refreshToken.(string)
 		}
 	}
-
+  
 	if params.GrantType == "authorization_code" {
 		// //? generate code challenge from code verifier req
 		codeChallengeSource := sess.Values["code_Challenge"]
