@@ -183,7 +183,8 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 	//? generate jwt token
 	jwtBody := map[string]string{
-		"username": session.UserID.String,
+		"sub":   session.UserID.String,
+		"scope": auth.Scope.String,
 	}
 
 	tokenExpTime := client.TokenLivetime.Int64
