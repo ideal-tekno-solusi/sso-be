@@ -1,5 +1,5 @@
 package entity
 
 type LoginResponse struct {
-	CallbackUrl string `json:"callbackUrl"`
+	AuthorizeUrl string `json:"authorize_url"`
 }

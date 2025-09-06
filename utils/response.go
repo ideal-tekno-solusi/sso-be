@@ -13,7 +13,7 @@ type DefaultResponse struct {
 	Guid      string `json:"guid"`
 	Timestamp string `json:"timestamp"`
 	IsSuccess bool   `json:"isSuccess"`
-	Data      any    `json:"data"`
+	Data      any    `json:"data,omitempty"`
 }
 
 func GenerateResponseJson(baseResponse *DefaultResponse, isSuccess bool, data any) DefaultResponse {

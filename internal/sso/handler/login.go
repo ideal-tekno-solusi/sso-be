@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/api/sso/operation"
+	"app/internal/sso/entity"
 	"app/internal/sso/repository"
 	"app/utils"
 	"context"
@@ -143,7 +144,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		return nil
 	}
 
-	//? set up redirect to /authorize
+	//? set up redirect to /authorize as response
 	authDomain := viper.GetString("config.url.internal.domain")
 	authPath := viper.GetString("config.url.internal.path.authorize")
 
@@ -168,6 +169,10 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	u.RawQuery = query.Encode()
 
+	res := entity.LoginResponse{
+		AuthorizeUrl: u.String(),
+	}
+
 	//? delete authorization from session
 	deleteSession := []string{
 		"authorization",
@@ -175,5 +180,5 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 	utils.DeleteAndSaveSession(deleteSession, sess, ctx.Request(), ctx.Response())
 
-	return ctx.Redirect(http.StatusFound, u.String())
+	return ctx.JSON(http.StatusOK, utils.GenerateResponseJson(nil, true, res))
 }
