@@ -33,13 +33,11 @@ func GenerateAuthToken(payloads map[string]any, expTime int) (*string, error) {
 	token, err := jwt.NewBuilder().
 		Issuer("sso").
 		Expiration(exp).
+		IssuedAt(now).
 		Build()
 	if err != nil {
 		return nil, err
 	}
-
-	payloads["exp"] = exp.Unix()
-	payloads["iat"] = now.Unix()
 
 	for k, v := range payloads {
 		token.Set(k, v)
