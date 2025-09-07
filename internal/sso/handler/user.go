@@ -55,7 +55,7 @@ func (r *RestService) User(ctx echo.Context, params *operation.UserRequest) erro
 		errorMessage := fmt.Sprintf("failed to decrypt jwt with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
 
-		utils.SendProblemDetailJson(ctx, http.StatusUnauthorized, errorMessage, ctx.Path(), uuid.NewString())
+		utils.SendProblemDetailJson(ctx, http.StatusInternalServerError, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
