@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GenerateAuthToken(payloads map[string]string, expTime int) (*string, error) {
+func GenerateAuthToken(payloads map[string]any, expTime int) (*string, error) {
 	privString := viper.GetString("secret.internal.private")
 	if privString == "" {
 		return nil, fmt.Errorf("private key not found")
@@ -27,13 +27,19 @@ func GenerateAuthToken(payloads map[string]string, expTime int) (*string, error)
 		return nil, err
 	}
 
+	now := time.Now()
+	exp := now.Add(time.Minute * time.Duration(expTime))
+
 	token, err := jwt.NewBuilder().
 		Issuer("sso").
-		Expiration(time.Now().Add(time.Minute * time.Duration(expTime))).
+		Expiration(exp).
 		Build()
 	if err != nil {
 		return nil, err
 	}
+
+	payloads["exp"] = exp.Unix()
+	payloads["iat"] = now.Unix()
 
 	for k, v := range payloads {
 		token.Set(k, v)
@@ -72,7 +78,7 @@ func ValidateJwt(message string) (bool, error) {
 	return true, nil
 }
 
-func DecryptJwt(message string) (*map[string]string, error) {
+func DecryptJwt(message string) (*map[string]any, error) {
 	pubString := viper.GetString("secret.internal.public")
 	if pubString == "" {
 		return nil, fmt.Errorf("public key not found")
@@ -93,10 +99,10 @@ func DecryptJwt(message string) (*map[string]string, error) {
 	}
 
 	keys := token.Keys()
-	payloads := make(map[string]string)
+	payloads := make(map[string]any)
 
 	for _, v := range keys {
-		var data string
+		var data any
 
 		token.Get(v, &data)
 
