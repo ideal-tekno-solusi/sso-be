@@ -13,8 +13,7 @@ jobs:
       - name: Connect tailscale
         uses: tailscale/github-action@v2
         with:
-          oauth-client-id: ${{secrets.TAILSCALE_OAUTH_ID}}
-          oauth-secret: ${{secrets.TAILSCALE_OAUTH_SECRET}}
+          authkey: ${{ secrets.TAILSCALE_AUTH_KEY }}
           tags: tag:github
           version: 1.86.2
           use-cache: 'true'
@@ -22,13 +21,13 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{secrets.SSH_HOST}} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
   
       - name: Connect with SSH
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{secrets.SSH_HOST}}
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.SSH_HOST }}
 
       - name: Change Dir to project
         run: |
