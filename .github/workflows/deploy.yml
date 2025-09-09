@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - name: Connect tailscale
         uses: tailscale/github-action@v3
