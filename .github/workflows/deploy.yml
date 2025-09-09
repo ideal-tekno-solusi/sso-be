@@ -33,7 +33,7 @@ jobs:
 
       - name: Change Dir to project
         run: |
-          cd project/sso-be/
+          cd ~/project/sso-be/
           
       - name: Docker down
         run: |
