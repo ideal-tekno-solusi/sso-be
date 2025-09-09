@@ -1,0 +1,55 @@
+name: Deploy to Main
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{secrets.TAILSCALE_OAUTH_ID}}
+          oauth-secret: ${{secrets.TAILSCALE_OAUTH_SECRET}}
+          tags: tag:github
+          version: 1.86.2
+          use-cache: 'true'
+  
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{secrets.SSH_HOST}} >> ~/.ssh/known_hosts
+  
+      - name: Connect with SSH
+        run: |
+          ssh -i ~/.ssh/id_ed25519 root@${{secrets.SSH_HOST}}
+
+      - name: Change Dir to project
+        run: |
+          cd /project/sso-be
+          
+      - name: Docker down
+        run: |
+          docker compose down
+
+      - name: Remove image
+        run: |
+          docker rmi sso-be-app
+
+      - name: Git fetch & pull
+        run: |
+          git fetch && git pull
+
+      - name: Docker up
+        run: |
+          docker compose up -d
+
+      - name: Finish
+        run: |
+          echo "Finish job"
