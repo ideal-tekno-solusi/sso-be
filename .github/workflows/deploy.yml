@@ -29,12 +29,13 @@ jobs:
   
       - name: Connect with SSH and run command
         run: |
-          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.SSH_HOST }}
-          cd ~/project/sso-be/
-          docker compose down
-          docker rmi sso-be-app
-          git fetch && git pull
-          docker compose up -d
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.SSH_HOST }} << 'EOF'
+            cd ~/project/sso-be/
+            docker compose down
+            docker rmi sso-be-app
+            git fetch && git pull
+            docker compose up -d
+          EOF
 
       - name: Finish
         run: |
