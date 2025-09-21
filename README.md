@@ -18,6 +18,8 @@ new TODO:
 - [x] rework /auth
 - [x] rework /token to serve token and refresh token
 - [x] change all logrus from controller to use one from utils
+- [ ] set logging to all receive requests
+- [ ] search a method to secure secret var in config
 - [ ] search a method to clean up auth code for refresh if it's not used for too long (7 days)
 - [ ] clean up
 
