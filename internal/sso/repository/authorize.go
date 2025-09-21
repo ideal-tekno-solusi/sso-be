@@ -9,10 +9,10 @@ import (
 )
 
 type Authorize interface {
-	GetClient(ctx context.Context, id string) (*database.GetClientRow, error)
-	FetchClientRedirects(ctx context.Context, id string) (*[]database.FetchClientRedirectsRow, error)
-	GetSession(ctx context.Context, id string) (*database.Session, error)
-	CreateAuth(ctx context.Context, authorizeCode, scope, userId string, authType int) error
+	GetClient(ctx context.Context, id string) (database.GetClientRow, error)
+	FetchClientRedirects(ctx context.Context, id string) ([]database.FetchClientRedirectsRow, error)
+	GetSession(ctx context.Context, id pgtype.Text) (database.Session, error)
+	CreateAuth(ctx context.Context, arg database.CreateAuthParams) error
 }
 
 type AuthorizeService struct {
@@ -25,20 +25,20 @@ func AuthorizeRepository(authorize Authorize) *AuthorizeService {
 	}
 }
 
-func (r *Repository) GetClient(ctx context.Context, id string) (*database.GetClientRow, error) {
+func (r *Repository) GetClient(ctx context.Context, id string) (database.GetClientRow, error) {
 	data, err := r.read.GetClient(ctx, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, nil
+			return data, nil
 		}
 
-		return nil, err
+		return data, err
 	}
 
-	return &data, nil
+	return data, nil
 }
 
-func (r *Repository) FetchClientRedirects(ctx context.Context, id string) (*[]database.FetchClientRedirectsRow, error) {
+func (r *Repository) FetchClientRedirects(ctx context.Context, id string) ([]database.FetchClientRedirectsRow, error) {
 	data, err := r.read.FetchClientRedirects(ctx, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -48,45 +48,24 @@ func (r *Repository) FetchClientRedirects(ctx context.Context, id string) (*[]da
 		return nil, err
 	}
 
-	return &data, nil
+	return data, nil
 }
 
-func (r *Repository) GetSession(ctx context.Context, id string) (*database.Session, error) {
-	args := pgtype.Text{
-		String: id,
-		Valid:  true,
-	}
-
-	data, err := r.read.GetSession(ctx, args)
+func (r *Repository) GetSession(ctx context.Context, id pgtype.Text) (database.Session, error) {
+	data, err := r.read.GetSession(ctx, id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, nil
+			return data, nil
 		}
 
-		return nil, err
+		return data, err
 	}
 
-	return &data, nil
+	return data, nil
 }
 
-func (r *Repository) CreateAuth(ctx context.Context, authorizeCode, scope, userId string, authType int) error {
-	args := database.CreateAuthParams{
-		Code: pgtype.Text{
-			String: authorizeCode,
-			Valid:  true,
-		},
-		Scope: pgtype.Text{
-			String: scope,
-			Valid:  true,
-		},
-		Type: int32(authType),
-		UserID: pgtype.Text{
-			String: userId,
-			Valid:  true,
-		},
-	}
-
-	err := r.write.CreateAuth(ctx, args)
+func (r *Repository) CreateAuth(ctx context.Context, arg database.CreateAuthParams) error {
+	err := r.write.CreateAuth(ctx, arg)
 	if err != nil {
 		return err
 	}

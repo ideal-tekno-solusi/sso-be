@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/api/sso/operation"
+	database "app/database/main"
 	"app/internal/sso/entity"
 	"app/internal/sso/repository"
 	"app/utils"
@@ -10,8 +11,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"reflect"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
@@ -22,6 +25,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 	repo := repository.InitRepo(r.dbr, r.dbw)
 	tokenService := repository.TokenRepository(repo)
+	authorizeService := repository.AuthorizeRepository(repo)
 
 	//? get session, will create new if not found
 	sess, err := session.Get("session", ctx)
@@ -55,7 +59,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? check if client exist first
-	client, err := tokenService.GetClient(context, params.ClientId)
+	client, err := authorizeService.GetClient(context, params.ClientId)
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get client from db with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -64,7 +68,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 		return nil
 	}
-	if client == nil {
+	if reflect.ValueOf(client).IsZero() {
 		errorMessage := "client not found"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
@@ -99,7 +103,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 			params.Code = refreshToken.(string)
 		}
 	}
-  
+
 	if params.GrantType == "authorization_code" {
 		//? generate code challenge from code verifier req
 		codeChallengeSource := sess.Values["code_Challenge"]
@@ -134,7 +138,10 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? validate code and user id of current session
-	auth, err := tokenService.GetAuth(context, params.Code)
+	auth, err := tokenService.GetAuth(context, pgtype.Text{
+		String: params.Code,
+		Valid:  true,
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get auth code with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -143,7 +150,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 		return nil
 	}
-	if auth == nil {
+	if reflect.ValueOf(auth).IsZero() {
 		errorMessage := "auth code not found, please try login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
@@ -153,7 +160,10 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 		return nil
 	}
 
-	session, err := tokenService.GetSession(context, guid.(string))
+	session, err := authorizeService.GetSession(context, pgtype.Text{
+		String: guid.(string),
+		Valid:  true,
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get session with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -162,7 +172,7 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 
 		return nil
 	}
-	if session == nil {
+	if reflect.ValueOf(session).IsZero() {
 		errorMessage := "session not found, please try login again"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 		utils.DeleteSession(sess, ctx.Request(), ctx.Response())
@@ -237,7 +247,10 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? update auth use date so it didn't used twice
-	err = tokenService.UpdateAuth(context, params.Code)
+	err = tokenService.UpdateAuth(context, pgtype.Text{
+		String: params.Code,
+		Valid:  true,
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to update auth code with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -248,7 +261,21 @@ func (r *RestService) Token(ctx echo.Context, params *operation.TokenRequest) er
 	}
 
 	//? insert refresh token to db
-	err = tokenService.CreateAuth(context, *refreshToken, auth.Scope.String, auth.UserID.String, 2)
+	err = authorizeService.CreateAuth(context, database.CreateAuthParams{
+		Code: pgtype.Text{
+			String: *refreshToken,
+			Valid:  true,
+		},
+		Scope: pgtype.Text{
+			String: auth.Scope.String,
+			Valid:  true,
+		},
+		Type: 2,
+		UserID: pgtype.Text{
+			String: auth.UserID.String,
+			Valid:  true,
+		},
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to create refresh token with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)

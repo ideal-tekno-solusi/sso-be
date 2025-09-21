@@ -6,9 +6,15 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+type Querier interface {
+	Login
+	Token
+	Authorize
+}
+
 type Repository struct {
-	read  *database.Queries
-	write *database.Queries
+	read  Querier
+	write Querier
 }
 
 func InitRepo(read *pgx.Conn, write *pgx.Conn) *Repository {
