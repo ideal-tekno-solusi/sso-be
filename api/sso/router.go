@@ -12,4 +12,5 @@ func Router(r *echo.Echo, s Service) {
 	api.POST("/v1/login", operation.LoginWrapper(s.Login))
 	api.POST("/v1/token", operation.TokenWrapper(s.Token))
 	api.GET("/v1/user", operation.UserWrapper(s.User))
+	api.GET("/v1/error", operation.ErrorWrapper(s.Error))
 }

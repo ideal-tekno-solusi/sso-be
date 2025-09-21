@@ -54,7 +54,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 		errorMessage := "failed to process login because user already login"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
-		utils.SendProblemDetailJson(ctx, http.StatusBadRequest, errorMessage, ctx.Path(), uuid.NewString())
+		utils.SendProblemDetailJson(ctx, http.StatusConflict, errorMessage, ctx.Path(), uuid.NewString())
 
 		return nil
 	}
