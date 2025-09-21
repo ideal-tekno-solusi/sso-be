@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/api/sso/operation"
+	database "app/database/main"
 	"app/internal/sso/logic"
 	"app/internal/sso/repository"
 	"app/utils"
@@ -10,8 +11,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -80,7 +83,10 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 		return nil
 	}
 
-	existSession, err := authorizeService.GetSession(context, guid.(string))
+	existSession, err := authorizeService.GetSession(context, pgtype.Text{
+		String: guid.(string),
+		Valid:  true,
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to get existing session with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
@@ -89,7 +95,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 
 		return nil
 	}
-	if existSession == nil {
+	if reflect.ValueOf(existSession).IsZero() {
 		errorMessage := "session not exist, please login again later"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
@@ -105,7 +111,7 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 
 		return nil
 	}
-	if client == nil {
+	if reflect.ValueOf(client).IsZero() {
 		errorMessage := "client not found"
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
@@ -145,7 +151,21 @@ func (r *RestService) Authorize(ctx echo.Context, params *operation.AuthorizeReq
 	}
 
 	//? save auth code and user id to db
-	err = authorizeService.CreateAuth(context, *authorizeCode, params.Scope, existSession.UserID.String, 1)
+	err = authorizeService.CreateAuth(context, database.CreateAuthParams{
+		Code: pgtype.Text{
+			String: *authorizeCode,
+			Valid:  true,
+		},
+		Scope: pgtype.Text{
+			String: params.Scope,
+			Valid:  true,
+		},
+		Type: 1,
+		UserID: pgtype.Text{
+			String: existSession.UserID.String,
+			Valid:  true,
+		},
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to create auth with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)

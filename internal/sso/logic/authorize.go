@@ -7,7 +7,7 @@ import (
 )
 
 type Authorize interface {
-	ValidateRedirectUris(urls *[]database.FetchClientRedirectsRow, url string) bool
+	ValidateRedirectUris(urls []database.FetchClientRedirectsRow, url string) bool
 }
 
 type AuthorizeService struct {
@@ -20,10 +20,10 @@ func AuthorizeLogic(authorize Authorize) *AuthorizeService {
 	}
 }
 
-func (l *Logic) ValidateRedirectUris(urls *[]database.FetchClientRedirectsRow, url string) (valid bool) {
+func (l *Logic) ValidateRedirectUris(urls []database.FetchClientRedirectsRow, url string) (valid bool) {
 	debug := viper.GetBool("config.debug")
 
-	for _, v := range *urls {
+	for _, v := range urls {
 		if debug {
 			valid = true
 			break

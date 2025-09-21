@@ -2,6 +2,7 @@ package handler
 
 import (
 	"app/api/sso/operation"
+	database "app/database/main"
 	"app/internal/sso/entity"
 	"app/internal/sso/repository"
 	"app/utils"
@@ -10,8 +11,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -65,7 +68,7 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 
 		return nil
 	}
-	if user == nil {
+	if reflect.ValueOf(user).IsZero() {
 		errorMessage := "username or password is wrong, please try again."
 		utils.WarningLog(errorMessage, ctx.Path(), serviceName)
 
@@ -117,7 +120,16 @@ func (r *RestService) Login(ctx echo.Context, params *operation.LoginRequest) er
 	}
 
 	//? save guid that be used for session to db
-	err = loginService.CreateSession(context, guid, user.ID)
+	err = loginService.CreateSession(context, database.CreateSessionParams{
+		ID: pgtype.Text{
+			String: guid,
+			Valid:  true,
+		},
+		UserID: pgtype.Text{
+			String: user.ID,
+			Valid:  true,
+		},
+	})
 	if err != nil {
 		errorMessage := fmt.Sprintf("failed to add session to db with error: %v", err)
 		utils.ErrorLog(errorMessage, ctx.Path(), serviceName)
