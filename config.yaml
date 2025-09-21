@@ -20,7 +20,7 @@ config:
       - "http://localhost:2000"
       - "http://localhost:5713"
       - "http://localhost:5714"
-      - "http://dev.idtecsi.my.id:2000"
+      - "https://dev.idtecsi.my.id:2000"
   debug: false
 
 secret:

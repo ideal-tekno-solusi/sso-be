@@ -36,6 +36,3 @@ func (r *Repository) UpdateAuth(ctx context.Context, code pgtype.Text) error {
 	if err != nil {
 		return err
 	}
-
-	return nil
-}
