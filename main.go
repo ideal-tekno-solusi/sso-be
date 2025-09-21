@@ -37,6 +37,7 @@ func main() {
 		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "OPTIONS"},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		ExposeHeaders:    []string{echo.HeaderContentType, echo.HeaderContentLength},
 		AllowCredentials: true,
 		MaxAge:           36000,
 	}))

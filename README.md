@@ -24,3 +24,4 @@ new TODO:
 # note
 - after edit query in database/postgresql/query.sql, dont forget to run `sqlc generate`
 - this project is made without minding it's securities, this project solely for POC of how fully build enterprise software works internally
+- if not in same network, run `cloudflared access tcp --hostname dbstaging.idtecsi.my.id --url localhost:5432` in your terminal host after auth to zero trust
